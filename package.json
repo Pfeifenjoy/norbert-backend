@@ -1,0 +1,20 @@
+{
+  "name": "norbert-be",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src//commands//startup.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@metthub.de:norbert/backend"
+  },
+  "author": "",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
