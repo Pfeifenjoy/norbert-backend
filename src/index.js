@@ -1,5 +1,5 @@
 var express = require('express');
-var routes = require('../restfull-api/routes.js');
+var routes = require('./restfull-api/routes.js');
 
 var app = express();
 app.use('/api/v1', routes);
