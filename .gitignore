@@ -103,3 +103,7 @@ fabric.properties
 ### Intellij Patch ###
 *.iml
 
+### Custom ###
+
+#Build directory
+build/
