@@ -1,17 +1,17 @@
-var mongo = require('mongodb');
+import { MongoClient } from "mongodb";
+import assert from "assert";
 var config = require('./../configuration.js');
 var promisify = require('./../utils/promisify.js');
 
-var database = null;
+const url = config.get('database.url');
 
-var connect = function(){
-	var url = config.get('database.url');
-	var promise = promisify();
-	mongo.MongoClient.connect(url, promise.callback);
-	return promise;
-};
+export default function database(app, callback) {
+    return new Promise((resolve, reject) => {
+        MongoClient.connect(url, { promiseLibrary: Promise }, (err, db) => {
+            if(err) reject(err);
+            app.db = db;
+            resolve(db);
+        });
+    });
+}
 
-module.exports = {
-	"connect": connect,
-	"handle": database
-};
