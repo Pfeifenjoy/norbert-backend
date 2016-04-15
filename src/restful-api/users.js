@@ -6,10 +6,6 @@ import assert from 'assert';
 
 const router = new Router;
 
-router.get('/', function(req, res){
-	res.send('Hello world!');
-})
-
 router.post('/', (req, res) => {
     let { username, password } = req.body;
     req.app.core.createUser(username, password)
