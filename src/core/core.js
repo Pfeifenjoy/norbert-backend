@@ -25,6 +25,9 @@ var default_db_url = null;
 var default_db = null;
 function createCore() {
 	var url = settings.get('database.url');
+	if (url === undefined) {
+		throw "There is an error in the config file: Setting database.url is required.";
+	}
 
 	// reuse the old db connection if possible
 	if (default_db !== null && default_db_url == url) {
