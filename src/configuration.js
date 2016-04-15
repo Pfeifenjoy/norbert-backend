@@ -10,6 +10,8 @@ const configfile_path = './files/config/norbert-config.json';
 var get_path_value = function(object, path = []) {
 	if (path.length == 0) {
 		return object;
+	} else if (object === undefined){
+		return undefined;
 	} else {
 		var path_head = path[0];
 		var path_tail = path.slice(1);
