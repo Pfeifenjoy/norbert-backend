@@ -1,8 +1,13 @@
-var express = require('express');
-var router = express.Router();
+/**
+ * @author Tobias Dorra
+ */
+import { Router } from "express";
+import users from "./users";
 
-router.get("/", function(req, res){
-	res.send("Hello world!");
-});
+// create router
+const router = new Router;
+
+// add the routes
+router.use('/users', users);
 
 module.exports = router;

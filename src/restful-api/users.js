@@ -1,19 +1,24 @@
 /**
  * @author Arwed Mett
  */
-import { Router } from "express";
-import assert from "assert";
+import { Router } from 'express';
+import assert from 'assert';
 
 const router = new Router;
 
-router.post("/users", (req, res) => {
+router.get('/', function(req, res){
+	res.send('Hello world!');
+})
+
+router.post('/', (req, res) => {
     let { username, password } = req.body;
-    req.app.db.collection("users").insertOne({
-        username, password
-    }, (err, result) => {
-        assert.equal(err, null);
-        res.send("User created.");
-    })
+    req.app.core.createUser(username, password)
+    	.then(function (){
+	        res.send('User created.');
+    	})
+    	.catch(function(){
+	        res.send('Oh oh...');
+    	});
 });
 
-export default router;
+module.exports = router;
