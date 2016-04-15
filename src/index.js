@@ -4,7 +4,8 @@ import users from "./restful-api/users";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import compression from "compression";
-import database from "./core/database";
+import db from "./core/database";
+import core from "./core/core";
 
 // initialize express.js
 var app = express();
@@ -33,9 +34,12 @@ app.use((err, req, res, next) => {
 
 
 // Establish database connection
-database(app)
-	.then(function(){
+db()
+	.then(function(db){
 
+        core.db = db;
+        core.start();
+        app.db = db;
 		// start server
 		app.listen(8080, function(){
 			console.log('Server is listening at port 8080.');

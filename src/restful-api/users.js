@@ -6,6 +6,7 @@ import assert from "assert";
 
 const router = new Router;
 
+
 router.post("/users", (req, res) => {
     let { username, password } = req.body;
     req.app.db.collection("users").insertOne({
