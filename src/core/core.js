@@ -1,4 +1,4 @@
-var settings = require('../configuration.js');
+var settings = require('../utils/configuration.js');
 var mongo = require('mongodb');
 var users = require('./users.js');
 

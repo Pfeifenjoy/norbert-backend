@@ -1,5 +1,5 @@
 var fs = require('fs');
-var clone = require('./utils/clone');
+var clone = require('./clone');
 
 const configfile_path = './files/config/norbert-config.json';
 

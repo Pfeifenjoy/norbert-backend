@@ -1,3 +1,12 @@
+/**
+ * @author Arwed Mett, Tobias Dorra
+ *
+ * This startup file runs the HTTP subsystem of 
+ * Norbert. It is responsible for the delivery
+ * of the frontend and provides the RESTful api.
+ * It also starts the scheduler to run the 
+ * "batch"-script from time to time.
+ */
 import express from 'express';
 import routes from "./restful-api/routes";
 import core from './core/core';
@@ -32,6 +41,7 @@ app.use((err, req, res, next) => {
 // Initialize the core
 core.createCore()
 	.then(function(core){
+		// Start the server
 		app.core = core;
 		return app.listen(8080);
 	})
