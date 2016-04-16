@@ -8,6 +8,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "gulp",
+    "startbatch": "gulp batch",
     "build-production": "gulp build",
     "clean": "gulp clean"
   },
@@ -18,7 +19,8 @@
   "author": "",
   "dependencies": {
     "express": "^4.13.4",
-    "mongodb": "^2.1.16"
+    "mongodb": "^2.1.16",
+    "morgan": "1.7.0"
   },
   "devDependencies": {
     "babel-core": "^6.3.26",
@@ -35,7 +37,6 @@
     "gulp-plumber": "1.1.0",
     "gulp-rimraf": "0.2.0",
     "gulp-sourcemaps": "1.6.0",
-    "morgan": "1.7.0",
     "path": "0.12.7"
   }
 }

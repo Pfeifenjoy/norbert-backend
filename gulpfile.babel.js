@@ -7,13 +7,16 @@ import sourcemaps from "gulp-sourcemaps";
 import babel from "gulp-babel";
 import nodemon from 'gulp-nodemon';
 import plumber from "gulp-plumber";
+import child_process from 'child_process';
 
 gulp.task("default", ["copy", "watch", "nodemon"]);
 gulp.task("production", ["build"]);
+gulp.task("batch", ["copy", "run-batch"]);
 
 let dirs = {
     src: "src/",
     serverScript: "build/index.js",
+    batchScript: "build/batch.js",
     dest: "build/",
 };
 
@@ -25,6 +28,23 @@ gulp.task('clean', () => {
 gulp.task("copy", ["js"]);
 gulp.task("build", ["js-production"]);
 
+gulp.task("run-batch", function(cb){
+    var proc = child_process.spawn("node", [dirs.batchScript]);
+    
+    proc.stdout.on('data', function (data) {
+      console.log('> ' + data);
+    });
+
+    proc.stderr.on('data', function (data) {
+      console.log('err > ' + data);
+    });
+
+    proc.on('exit', function (code) {
+      console.log('exit code: ' + code);
+      cb(code);
+    });
+
+});
 
 gulp.task("js", () => {
     return gulp.src([path.join(dirs.src, "**/*.js")], {base: dirs.src})
@@ -40,8 +60,6 @@ gulp.task("js-production", () => {
     .pipe(babel())
     .pipe(gulp.dest(dirs.dest));
 });
-
-
 
 gulp.task("watch", () => {
     gulp.watch(path.join(dirs.src, "**/*.js"), ["js"]);
