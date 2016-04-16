@@ -17,4 +17,9 @@ router.post('/', (req, res) => {
     	});
 });
 
+router.put("/:userId", (req, res) => {
+    let userId = req.params.userId;
+    let { username, password } = req.body;
+});
+
 module.exports = router;
