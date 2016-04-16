@@ -10,10 +10,11 @@
 import express from 'express';
 import routes from "./restful-api/routes";
 import core from './core/core';
+import config from "./utils/configuration";
+import scheduler from "./task-scheduler/scheduler"
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import compression from "compression";
-import config from "utils/config";
 
 // initialize express.js
 var app = express();
@@ -28,9 +29,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 // static files delivery
 // TODO
 
-// routes
+// restFULL api
+var apiEnabled = config.get('http.api.enabled');
 var apiBaseUrl = config.get('http.api.baseUrl') || '/api/v1';
-app.use(apiBaseUrl, routes);
+if (apiEnabled) {
+	app.use(apiBaseUrl, routes);
+}
 
 // Handle routes which don't exist
 app.use((req, res, next) => {
@@ -42,6 +46,9 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).send("Something went wrong");
 });
+
+// Start the task scheduler
+scheduler.start();
 
 // Initialize the core
 core.createCore()

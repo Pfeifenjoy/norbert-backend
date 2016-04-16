@@ -13,10 +13,14 @@ core.createCore()
 
 		// todo: run jobs!
 		console.log("Running jobs...");
-		process.exit(0);
+		setTimeout(function(){
+			console.log("finished");
+			process.exit(0);
+		}, 10000);
 	})
 	.catch(function (err){
 		console.log("Something went wrong, could not run any batch jobs.");
 		console.log(err);
 		process.exit(1);
 	});
+

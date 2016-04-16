@@ -9,8 +9,13 @@
     		"baseUrl": "/"
     	},
     	"api": {
+    		"enabled": true,
     		"baseUrl": "/api/v1"
     	}
+    },
+    "taskScheduler": {
+    	"enabled": true,
+    	"interval": 60000
     },
     "dropbox": {
     
