@@ -16,5 +16,10 @@ router.post('/', (req, res) => {
 	        res.send('Oh oh...');
     	});
 });
+router.put('/:userId',(req,res) => {
+    let userID = req.params.userID;
+    let json = req.body;
+
+});
 
 module.exports = router;
