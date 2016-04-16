@@ -13,6 +13,7 @@ import core from './core/core';
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import compression from "compression";
+import config from "utils/config";
 
 // initialize express.js
 var app = express();
@@ -24,8 +25,12 @@ app.use(compression());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+// static files delivery
+// TODO
+
 // routes
-app.use('/api/v1', routes);
+var apiBaseUrl = config.get('http.api.baseUrl') || '/api/v1';
+app.use(apiBaseUrl, routes);
 
 // Handle routes which don't exist
 app.use((req, res, next) => {

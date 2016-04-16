@@ -2,6 +2,16 @@
     "database": {
         "url": "mongodb://127.0.0.1/norbert"
     },
+    "http": {
+    	"staticFiles": {
+    		"enabled": true,
+    		"basePath": "files/static",
+    		"baseUrl": "/"
+    	},
+    	"api": {
+    		"baseUrl": "/api/v1"
+    	}
+    },
     "dropbox": {
     
     }
