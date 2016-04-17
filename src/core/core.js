@@ -47,5 +47,6 @@ function createCore() {
 	return promise;
 };
 
+
 module.exports.Core = Core;
 module.exports.createCore = createCore;
