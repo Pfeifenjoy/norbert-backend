@@ -17,6 +17,9 @@
     	"enabled": true,
     	"interval": 60000
     },
+    "informationProviders": [
+        {"name": "demo", "module":"information-providers/demo.js"}
+    ],
     "dropbox": {
     
     }

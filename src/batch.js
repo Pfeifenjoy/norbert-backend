@@ -11,12 +11,17 @@ import core from './core/core';
 core.createCore()
 	.then(function (core){
 
-		// todo: run jobs!
-		console.log("Running jobs...");
-		setTimeout(function(){
-			console.log("finished");
-			process.exit(0);
-		}, 10000);
+		console.log("Importing Information");
+		core.importInformation()
+			.then(function(){
+				console.log("Imported  Information");
+				process.exit(0);
+			})
+			.catch(function(err){
+				console.log("Fail.");
+				console.log(err);
+				process.exit(1);
+			});
 	})
 	.catch(function (err){
 		console.log("Something went wrong, could not run any batch jobs.");
