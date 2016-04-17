@@ -19,7 +19,7 @@ router.post('/', (req, res) => {
 	        res.send('User created.');
     	})
     	.catch(function(){
-	        res.send('Username ' + username +' is already in use');
+	        res.status(500).send('Username ' + username +' is already in use');
     	});  
 });
 
@@ -31,9 +31,46 @@ router.put("/:userId", (req, res) => {
             res.send('User updated.');
         })
         .catch(function(){
-            res.send('Username ' + username +' is already in use');
+            res.status(500).send('Username ' + username +' is already in use');
         });  
 });
 
+router.delete("/:userId", (req,res) => {
+    let userId = req.params.userId;
+    console.log(userId);
+    req.app.core.deleteUser(userId)
+        .then(function(){
+            res.send('User ' + userId + ' was succesfully deleted.');
+        })
+        .catch(function(){
+            res.status(500).send('User ' + userId + ' could not be deleted.');
+        });
+        
+});
+
+
+router.post("/login", (req, res) => {
+    let {username, password} = req.body;  
+    req.app.core.authUser(username, password)
+    .then(function() {
+            req.session.user = {username};
+            req.session.authenticated = true;
+            res.send('Succesfully authenticated user ' + username );
+                
+        })
+    .catch(function(){
+        res.status(403).send('Authentication for user ' + username + ' failed');
+        });
+});
+
+router.authenticate = (req, res, next) => {
+    console.log("authentication: " + req.session);
+    if(req.session.authenticated) {
+        next();
+    }
+    else {
+        res.status(403).send('Could not authenticate');
+    }
+};
 
 module.exports = router;
