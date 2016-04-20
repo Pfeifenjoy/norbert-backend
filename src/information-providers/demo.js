@@ -1,12 +1,13 @@
 import {ObjectID} from 'mongodb';
 
+var sync =  function(infoManager){
+
+	return infoManager.insert({
+		"title": "Hallo Welt!"
+	});
+}
+
 module.exports = {
-	"sync": function(infoManager){
-		return Promise.resolve()
-			.then(() => {
-				return infoManager.insert({
-					"title": "Hallo Welt!"
-				});
-			});
-	}
+	"pluginName": "info-provider-demo",
+	"sync": sync
 };

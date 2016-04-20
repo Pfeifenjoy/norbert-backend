@@ -18,7 +18,10 @@
     	"interval": 60000
     },
     "informationProviders": [
-        {"name": "demo", "module":"information-providers/demo.js"}
+        "./information-providers/demo.js"
+    ],
+    "components": [
+        "./components/description.js"
     ],
     "dropbox": {
     
