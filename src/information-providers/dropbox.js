@@ -13,7 +13,6 @@ const rpcURL = "api.dropboxapi.com";
 let token = "";
 let path_prefix = "";
 let cursor = "";
-let has_more = false;
 let reset = false;
 
 var sync = function(infoManager) {
@@ -21,11 +20,15 @@ var sync = function(infoManager) {
 
 	initCrawler();
 
-	console.log(cursor);
-	console.log(has_more);
-	console.log(reset);
-
-	getData();
+	return getData().then(data => {
+			console.log("Finsihed");
+			data.forEach(chunk =>{
+				console.log(chunk.cursor)
+			})
+		})
+		.catch(err => {
+			console.log(err);
+		})
 
 
 	//return infoManager.insert({
@@ -55,43 +58,37 @@ let initCrawler = () => {
 }
 
 let getData = () => {
+	return delta().then(data => {
+			cursor = data.cursor;
+			reset = data.reset;
 
-	let sync = Promise.resolve();
-	do {
-		sync = sync.then(() => {
-				return delta();
-			})
-			.then(data => {
-				console.log("ROUND");
+			console.log(cursor);
+			console.log(data.has_more);
+			console.log(reset);
 
-				cursor = data.cursor;
-				has_more = data.has_more;
-				reset = data.reset;
-
-				console.log(cursor);
-				console.log(has_more);
-				console.log(reset);
-
-				console.log("Got all Data");
-
-				fs.appendFile("response.txt", JSON.stringify(data), function(err) {
-					if (err) {
-						return console.log(err);
-					}
-
-				});
+			console.log("Got all Data");
 
 
-			})
-			.catch(error => {
-				console.log(error);
+			fs.appendFile("response.txt", JSON.stringify(data), function(err) {
+				if (err) {
+					return console.log(err);
+				}
+
 			});
-	} while (has_more);
 
+			if (data.has_more) {
+				return getData()
+					.then(extra => {
+						return [data].concat(extra);
+					});
+			}
+			return [data];
 
-
+		})
+		.catch(error => {
+			console.log(error);
+		});
 }
-
 
 // Dropbox APIv1 (Core API)
 
@@ -125,7 +122,6 @@ let delta = () => {
 
 		// Set up the request
 		var req = https.request(post_options, (res) => {
-			console.log("REQUEST");
 			res.setEncoding('utf8');
 
 			let data = "";
@@ -146,12 +142,10 @@ let delta = () => {
 			});
 
 		});
-
 		req.on('error', (err) => {
 			reject("HTTP-error:" + err);
 		});
 
 		req.end(body);
-		console.log("B");
 	});
 }
