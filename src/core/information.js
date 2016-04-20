@@ -20,7 +20,7 @@ var importInformation = function() {
 
 	// sync each information provider
 	for (var name of Object.keys(providers)) {
-		var provider = providers[name];
+		let provider = providers[name];
 		sync = sync.then(() => {
 			var dbAccess = new InfoManager(name, this.db);
 			return provider.sync(dbAccess);
