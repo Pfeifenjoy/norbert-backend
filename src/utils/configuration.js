@@ -35,6 +35,9 @@ var load_json_file = function(path) {
  */
 var save_json_file = function(path, object) {
 	var file_contents = JSON.stringify(object, null, 4);
+
+	console.log(file_contents);
+
 	fs.writeFile(path, file_contents, function(err){
 		if (err) {
 			console.log("ERROR while writing the config file.");
@@ -77,6 +80,9 @@ var set = function(str_path, value){
 		var destination = get_path_value(config, path_body);
 		destination[path_last] = clone(value);
 	}
+
+
+	console.log(config);
 
 	// Save
 	save_json_file(configfile_path, config);

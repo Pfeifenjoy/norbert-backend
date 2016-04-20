@@ -1,0 +1,32 @@
+{
+    "database": {
+        "url": "mongodb://127.0.0.1/norbert"
+    },
+    "http": {
+        "staticFiles": {
+            "enabled": true,
+            "basePath": "files/static",
+            "baseUrl": "/"
+        },
+        "api": {
+            "enabled": true,
+            "baseUrl": "/api/v1"
+        }
+    },
+    "taskScheduler": {
+        "enabled": true,
+        "interval": 60000
+    },
+    "informationProviders": [
+        "./information-providers/demo.js",
+        "./information-providers/dropbox.js"
+    ],
+    "components": [
+        "./components/description.js"
+    ],
+    "dropbox": {
+        "oAuthToken": "ht2RTMexv-8AAAAAAAACQEzDsUmcxWCdeAHR8LHt_69HU-W_y1r3GC4fOREreoZH",
+        "informationPath": "/",
+        "cursor": ""
+    }
+}
