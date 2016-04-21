@@ -32,7 +32,13 @@ var run = function(){
 
 		// forward output
 		proc.stdout.on('data', (data) => {
-			process.stdout.write("> " + data);
+            var output = data
+                .toString()
+                .trimRight()
+                .split('\n')
+                .map(line => '> ' + line)
+                .join('\n');
+			console.log(output);
 		});
 
 		proc.stderr.on('data', (data) => {

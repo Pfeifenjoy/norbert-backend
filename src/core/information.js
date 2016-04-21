@@ -2,14 +2,14 @@
  * @author: Tobias Dorra
  */
 
-import clone from '../utils/clone';
-import config from '../utils/configuration';
-import {loadPlugins} from '../utils/load-plugins';
 import {NewsFeedObject} from './newsfeed-object';
 
+/**
+ * Represents an Information in the newsfeed.
+ */
 class Information extends NewsFeedObject {
 
-    constructor(dbObject) {
+    constructor(dbObject = {}) {
         super(dbObject);
 
         this._obj.hidden_for = this._obj.hidden_for || [];

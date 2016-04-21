@@ -3,24 +3,27 @@
         "url": "mongodb://127.0.0.1/norbert"
     },
     "http": {
-    	"staticFiles": {
-    		"enabled": true,
-    		"basePath": "files/static",
-    		"baseUrl": "/"
-    	},
-    	"api": {
-    		"enabled": true,
-    		"baseUrl": "/api/v1"
-    	}
+        "staticFiles": {
+            "enabled": true,
+            "basePath": "files/static",
+            "baseUrl": "/"
+        },
+        "api": {
+            "enabled": true,
+            "baseUrl": "/api/v1"
+        }
     },
     "taskScheduler": {
-    	"enabled": true,
-    	"interval": 60000
+        "enabled": true,
+        "interval": 60000
     },
     "informationProviders": [
-        {"name": "demo", "module":"information-providers/demo.js"}
+        "./information-providers/demo.js"
+    ],
+    "components": [
+        "./components/description"
     ],
     "dropbox": {
-    
+        "token": ""
     }
 }

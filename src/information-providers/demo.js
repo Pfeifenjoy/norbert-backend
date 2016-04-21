@@ -1,13 +1,31 @@
 import {ObjectID} from 'mongodb';
+import {createComponent} from './../core/components';
+import {Information} from './../core/information';
 
 var sync =  function(infoManager){
 
-	return infoManager.insert({
-		"title": "Hallo Welt!"
-	});
+    // Create a description component and fill it with some text.
+    let desc = createComponent('components-description')
+    desc.text = "Ich bin eine Beschreibung!";
+
+    // Add it to a new Information
+    let info = new Information();
+    info.title = "Hallo Universum!";
+    info.components = [
+        desc
+    ];
+
+    // Insert the Information into the database.
+    let promise = infoManager.insert(info);
+
+    // Always return a promise!
+    return promise;
+
 }
 
 module.exports = {
 	"pluginName": "info-provider-demo",
-	"sync": sync
+    "pluginObject": {
+        "sync": sync
+    }
 };

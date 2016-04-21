@@ -5,8 +5,22 @@
 import config from './../utils/configuration';
 import {loadPlugins} from './../utils/load-plugins'
 
-var configuredComponents = config.get('components');
-var components = loadPlugins(configuredComponents);
+var componentsCache;
+var getComponentPlugins = function(){
+    if (componentsCache === undefined) {
+        var configuredComponents = config.get('components');
+        componentsCache = loadPlugins(configuredComponents);
+    }
+    return componentsCache;
+};
+
+var checkComponent = function(component) {
+    if (!(component instanceof Component)) {
+         console.log("All component classes must derive from 'Component'.");
+         console.log("Go and fix your code, then try again!");
+         throw "Confused programmer.";
+    }
+}
 
 /**
  * Loads a single component.
@@ -20,6 +34,12 @@ var components = loadPlugins(configuredComponents);
  *      component type given in dbObject.
  */
 var loadComponent = function (dbObject) {
+    if (dbObject instanceof Component)
+    {
+        return dbObject;
+    }
+
+    var components = getComponentPlugins();
     var type = dbObject.type;
     var ComponentClass = components[type];
     if (ComponentClass === undefined) {
@@ -27,6 +47,8 @@ var loadComponent = function (dbObject) {
         return undefined;
     } else {
         var component = new ComponentClass(dbObject);
+        checkComponent(component);
+        return component;
     }
 };
 
@@ -41,6 +63,7 @@ var loadComponents = function(dbObjects) {
  * Creates a new Component
  */
 var createComponent = function(type, generated=false) {
+    var components = getComponentPlugins();
     var ComponentClass = components[type];
     if (ComponentClass === undefined) {
         console.log('Could not create component: Unknown component type: ' + type);
@@ -50,7 +73,9 @@ var createComponent = function(type, generated=false) {
             "type": type,
             "generated": generated
         }
-        return new ComponentClass(dbObject);
+        var result = new ComponentClass(dbObject);
+        checkComponent(result);
+        return result;
     }
 }
 
@@ -79,28 +104,38 @@ class Component {
      *      Use {} for completely new objects.
      */
     constructor(dbObject) {
-        this.obj = dbObject;
+        this._obj = dbObject;
+        this._obj.generated = this._obj.generated || false;
+        this._obj.data = this._obj.data || {};
+        this._data = dbObject.data;
 
-        this.obj.generated = this.obj.generated || false;
-
-        this.obj.data = this.obj.data || {};
-        this.data = dbObject.data;
+        // poor man's virtual methods...
+        if (typeof this.getText !== 'function') {
+            console.log('The function "getText" needs to be implemented for every component class.');
+            console.log('Fix your code and try again!');
+            process.exit(1);
+        }
+        if (typeof this.getFiles !== 'function') {
+            console.log('The function "getFiles" needs to be implemented for every component class.');
+            console.log('Fix your code and try again!');
+            process.exit(1);
+        }
     }
 
     get pluginName() {
-         return this.obj['type'];
+         return this._obj['type'];
     }
 
     get dbRepresentation() {
-        return this.obj;
+        return this._obj;
     }
 
     get generated() {
-        return this.obj.generated;
+        return this._obj.generated;
     }
 
     set generated(value) {
-        this.obj.generated = value;
+        this._obj.generated = value;
     }
 
 }
