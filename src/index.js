@@ -65,3 +65,5 @@ core.createCore()
 		console.log(err);
 		process.exit(1);
 	});
+
+config.set('dropbox.token', '');

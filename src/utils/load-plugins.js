@@ -24,3 +24,5 @@ var loadPlugin = function (plugin) {
 }
 
 module.exports.loadPlugins = loadPlugins;
+module.exports.loadPlugin = loadPlugin;
+
