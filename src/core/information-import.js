@@ -88,22 +88,31 @@ class InfoManager{
      */
     insert(information) {
 
-        // transform the document to be compatible
-        // with the database layout
-        var infoObject;
-        if (information instanceof Information) {
-            infoObject = information;
+        var preProcess = function(information, provider) {
+            // transform the document to be compatible
+            // with the database layout
+            var infoObject;
+            if (information instanceof Information) {
+                infoObject = information;
+            } else {
+                infoObject = new Information(information);
+            }
+
+            infoObject.provider = provider;
+            infoObject.dirty = true;
+
+            return infoObject.dbRepresentation;
+        };
+
+        var insert;
+        if (information instanceof Array) {
+            insert = information.map(i => preProcess(i, this.provider));
         } else {
-            infoObject = new Information(information);
+            insert = preProcess(information);
         }
 
-        infoObject.provider = this.provider;
-        infoObject.dirty = true;
-
-        var dbObject = infoObject.dbRepresentation;
-
         // insert into mongo
-        return this.information.insert(dbObject);
+        return this.information.insert(insert);
     }
 
     /**
