@@ -1,13 +1,15 @@
 /**
- * @author Tobias Dorra
+ * @author Tobias Dorra, Arwed Mett
  */
 import { Router } from "express";
-import users from "./users";
 import session from "express-session";
 import config from "../utils/configuration";
 import connect from "connect-mongo";
-
 const MongoStore = connect(session);
+
+//subroutes
+import users from "./users";
+import entries from "./entries";
 
 
 
@@ -24,6 +26,7 @@ export function initialRoutes(core) {
     }))
     // add the routes
     router.use('/users', users);
+    router.use("/entries", entries);
     
     return router;
 }

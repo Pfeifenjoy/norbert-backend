@@ -52,11 +52,14 @@ router.delete("/:userId", (req,res) => {
 router.post("/login", (req, res) => {
     let {username, password} = req.body;  
     req.app.core.authUser(username, password)
-    .then(function() {
-            req.session.user = {username};
-            req.session.authenticated = true;
-            res.send('Succesfully authenticated user ' + username );
-        })
+    .then(user => {
+        req.session.user = {
+            id: user._id,
+            username: user.username
+        };
+        req.session.authenticated = true;
+        res.send('Succesfully authenticated user ' + username );
+    })
     .catch(function(e){
         console.log(e);
         res.status(403).send('Authentication for user ' + username + ' failed');

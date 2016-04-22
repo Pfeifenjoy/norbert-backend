@@ -6,6 +6,8 @@ var settings = require('../utils/configuration.js');
 var mongo = require('mongodb');
 var users = require('./users.js');
 var infos = require('./information-import.js');
+var entries = require("./entries");
+
 
 /**
  * Core:
@@ -20,6 +22,7 @@ function Core(dbConnection){
 // Assign the modules to the core
 Object.assign(Core.prototype, users);
 Object.assign(Core.prototype, infos);
+Object.assign(Core.prototype, entries);
 
 /**
  * createCore:
