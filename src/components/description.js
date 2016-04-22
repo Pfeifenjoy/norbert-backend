@@ -1,45 +1,31 @@
-const pluginName = "components-text";
+import {Component} from './../core/components';
 
-const defaultObj = {
-	"text": ""
-};
+class DescriptionComponent extends Component{
 
-var descriptionComponent = function(obj){
-	this.obj = Object.assign({}, defaultObj, obj);
-};
+    constructor(dbObject) {
+        super(dbObject);
+        this._data.text = this._data.text || "";
+    }
 
+    set description(text) {
+        this._data.text = text;
+    }
 
-descriptionComponent.prototype.setText = function(text) {
-	this.obj.text = text;
-};
+    get description() {
+        return this._data.text;
+    }
 
-descriptionComponent.prototype.getText = function() {
-	return text;
-};
+    getText() {
+        return this.description;
+    }
 
-descriptionComponent.prototype.getPluginName = function(){
-	// the plugin name of this component
-	return pluginName;
-};
-
-descriptionComponent.prototype.getDbRepresentation = function() {
-	// returns the object that should be persisted in the DB.
-	return this.obj;
-}
-
-descriptionComponent.prototype.getComponentText = function() {
-	// gibt den Text für die Suche & das Clustering zurück
-	return this.obj.text;
-};
-
-descriptionComponent.prototype.getFiles = function() {
-	// gibt die Dateien der Komponente zurück.
-	// (Die zurückgegebenen Objekte werden so, wie sie sind
-	// an den storage provider weitergegeben, um die Datei herunterzuladen.)
-	return [];
+    getFiles() {
+        return [];
+    }
 }
 
 module.exports = {
-	"pluginName": pluginName,
-	"componentClass": descriptionComponent
+	"pluginName": 'components-description',
+	"pluginObject": DescriptionComponent
 };
+
