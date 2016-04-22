@@ -25,7 +25,19 @@ gulp.task('clean', () => {
     .pipe(clean());
 });
 
-gulp.task("copy", ["js"]);
+gulp.task("copy", ["js", "frontend", "index"]);
+
+
+gulp.task("index", () => {
+    return gulp.src(path.join(dirs.src, "frontend/index.html"))
+                   .pipe(gulp.dest(path.join(dirs.dest, "frontend")));
+})
+
+gulp.task("frontend", () => {
+    return gulp.src(path.join(dirs.src, "frontend/build/**/*"))
+                   .pipe(gulp.dest(path.join(dirs.dest, "frontend/build")));
+})
+
 gulp.task("build", ["js-production"]);
 
 gulp.task("run-batch", function(cb){
@@ -43,11 +55,10 @@ gulp.task("run-batch", function(cb){
       console.log('exit code: ' + code);
       cb(code);
     });
-
 });
 
 gulp.task("js", () => {
-    return gulp.src([path.join(dirs.src, "**/*.js")], {base: dirs.src})
+    return gulp.src([path.join(dirs.src, "**/*.js"), "!src/frontend/**/*"], {base: dirs.src})
     .pipe(plumber())
     .pipe(sourcemaps.init({loadMaps: true}))
     .pipe(babel())
@@ -56,13 +67,13 @@ gulp.task("js", () => {
 });
 
 gulp.task("js-production", () => {
-    return gulp.src(path.join(dirs.src, "**/*.js"))
+    return gulp.src(path.join(dirs.src, "**/*.js", "!src/frontend/**/*"))
     .pipe(babel())
     .pipe(gulp.dest(dirs.dest));
 });
 
 gulp.task("watch", () => {
-    gulp.watch(path.join(dirs.src, "**/*.js"), ["js"]);
+    gulp.watch([path.join(dirs.src, "**/*.js"), "!src/frontend/**/*"], ["js"]);
 });
 
 gulp.task("nodemon", ["copy"], cb => {
