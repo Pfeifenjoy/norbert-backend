@@ -20,6 +20,10 @@
     "informationProviders": [
         "./information-providers/demo.js"
     ],
+    "files": {
+        "storageService": "./storage-services/demo.js",
+        "tmpFolder": "./files/tmp/"
+    },
     "components": [
         "./components/description"
     ],
