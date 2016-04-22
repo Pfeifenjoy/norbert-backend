@@ -25,9 +25,13 @@
         "./components/description"
     ],
     "dropbox": {
-        "oAuthToken": "ht2RTMexv-8AAAAAAAACQEzDsUmcxWCdeAHR8LHt_69HU-W_y1r3GC4fOREreoZH",
-        "informationPath": "/",
+        "oAuthToken": "ht2RTMexv-8AAAAAAAACtPP9DgipsEJbzNfvW8q0MIDdCARzO5UuUVvISn3A9Jih",
+        "informationPath": "/DHBW - TINF14AIBC",
         "cursor": "",
-        "token": ""
+        "token": "",
+        "uid": "253849555",
+        "informationPathID": "udMU630FO4UAAAAAAAAAAg",
+        "storagePath": "/test",
+        "storagePathID": "udMU630FO4UAAAAAAAABNA"
     }
 }
