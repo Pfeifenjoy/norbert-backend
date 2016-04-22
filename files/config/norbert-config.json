@@ -22,7 +22,7 @@
         "./information-providers/dropbox.js"
     ],
     "components": [
-        "./components/description.js"
+        "./components/description"
     ],
     "dropbox": {
         "oAuthToken": "ht2RTMexv-8AAAAAAAACQEzDsUmcxWCdeAHR8LHt_69HU-W_y1r3GC4fOREreoZH",

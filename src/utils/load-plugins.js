@@ -20,7 +20,10 @@ var loadPlugin = function (plugin) {
 	}
 
 	var name = pluginObject.pluginName;
-	return {"name": name, "object": pluginObject};
+    var object = pluginObject.pluginObject;
+	return {"name": name, "object": object};
 }
 
 module.exports.loadPlugins = loadPlugins;
+module.exports.loadPlugin = loadPlugin;
+

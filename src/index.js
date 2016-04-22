@@ -27,7 +27,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 // static files delivery
-// TODO
+app.use("/build", express.static(__dirname + "/frontend/build/"));
+
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/frontend/index.html");
+})
 
 // restFULL api
 var apiEnabled = config.get('http.api.enabled');
@@ -55,7 +59,7 @@ core.createCore()
 	.then(function(core){
 		// Start the server
 		app.core = core;
-		return app.listen(8080);
+		return app.listen(3001);
 	})
 	.then(function(){
 		console.log('Server is listening at port 8080.');
@@ -65,3 +69,5 @@ core.createCore()
 		console.log(err);
 		process.exit(1);
 	});
+
+config.set('dropbox.token', '');

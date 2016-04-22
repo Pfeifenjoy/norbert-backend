@@ -1,9 +1,7 @@
-/*
-	@author Simon Oswald, Arwed Mett
-*/
+/**
+ * @author Simon Oswald, Arwed Mett
+ */
 import crypto from "crypto";
-
-
 
 
 function createUser(username, name, password) {

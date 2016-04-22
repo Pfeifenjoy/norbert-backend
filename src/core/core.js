@@ -1,7 +1,11 @@
+/**
+ * @author: Tobias Dorra
+ */
+
 var settings = require('../utils/configuration.js');
 var mongo = require('mongodb');
 var users = require('./users.js');
-var infos = require('./information.js');
+var infos = require('./information-import.js');
 
 /**
  * Core:
