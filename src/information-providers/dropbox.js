@@ -69,7 +69,9 @@ var sync = function(infoManager) {
 
 module.exports = {
 	"pluginName": "info-provider-dropbox",
-	"sync": sync
+    "pluginObject": {
+        "sync": sync
+    }
 };
 
 

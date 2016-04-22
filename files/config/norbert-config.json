@@ -19,7 +19,7 @@
     },
     "informationProviders": [
         "./information-providers/demo.js",
-        "./information-providers/dropbox.js"
+        "./information-providers/dropboxoauth.js"
     ],
     "components": [
         "./components/description"
@@ -27,6 +27,7 @@
     "dropbox": {
         "oAuthToken": "ht2RTMexv-8AAAAAAAACQEzDsUmcxWCdeAHR8LHt_69HU-W_y1r3GC4fOREreoZH",
         "informationPath": "/",
-        "cursor": ""
+        "cursor": "",
+        "token": ""
     }
 }
