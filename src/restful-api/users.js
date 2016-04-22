@@ -18,7 +18,7 @@ router.post('/', (req, res) => {
     	.then(function (){
 	        res.send('User created.');
     	})
-    	.catch(function(){
+    	.catch(function(e){
 	        res.status(500).send('Username ' + username +' is already in use');
     	});  
 });
@@ -56,9 +56,9 @@ router.post("/login", (req, res) => {
             req.session.user = {username};
             req.session.authenticated = true;
             res.send('Succesfully authenticated user ' + username );
-                
         })
-    .catch(function(){
+    .catch(function(e){
+        console.log(e);
         res.status(403).send('Authentication for user ' + username + ' failed');
         });
 });
