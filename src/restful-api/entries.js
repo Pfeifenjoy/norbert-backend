@@ -4,6 +4,7 @@
 import { Router } from 'express';
 import assert from 'assert';
 import { ObjectID }from 'mongodb';
+import {Entry} from '../core/entry';
 
 let router = new Router;
 
@@ -21,7 +22,7 @@ router.post("/", (req, res) => {
     } catch(e) {
         tags = [];
     }
-    let entry = new req.app.core.Entry();
+    let entry = new Entry();
 
     entry.title = title || "";
     entry.owned_by = owned_by;
