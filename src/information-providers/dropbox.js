@@ -2,6 +2,10 @@
  * @author: Philipp Pütz
  */
 import config from '../utils/configuration.js';
+import {ObjectID} from 'mongodb';
+import {createComponent} from './../core/components';
+import {Information} from './../core/information';
+import {File} from './../core/files';
 
 var https = require('https');
 var querystring = require('querystring');
@@ -160,11 +164,31 @@ let evaluateEntry = (entry) => {
 					console.log(id);
 
 					// Compare if id exists in DB
+					// findOne(filter.extra(id))
+					//cursor -> Information Objekt
 
 					// if ID exists in DB
 					// Update current DB status for the file
+					// update filter;
 
 					// Else create new Entry
+					// Create a description component and fill it with some text.
+					let myFile = new File();
+					myFile.setToRemoteFile(json , filename);
+
+					let docu = createComponent('components-document');
+					docu.file = myFile;
+
+					// Add it to a new Information
+					let info = new Information();
+					info.title = ;// Dateiname
+					info.components = [
+						docu
+					];
+
+					// Insert the Information into the database.
+					let promise = infoManager.insert(info);
+					// return promise
 
 				})
 				.catch(error => {
@@ -176,19 +200,11 @@ let evaluateEntry = (entry) => {
 	else {
 
 		// Delete all entries with that path and sub path
+		//delete
 
 	}
 	return prom;
 }
-/*
-{
-	"id": 123,
-	"created_at": timestamp,
-	"dirty": false,
-	"hidden_for": [],
-	"title": filename,
-	"components": [{}]
-}*/
 
 // Dropbox APIv2 
 /* getID

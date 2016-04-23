@@ -33,7 +33,7 @@ class DocumentComponent extends Component {
 
 
 module.exports = {
-	"pluginName": 'components-description',
+	"pluginName": 'components-document',
 	"pluginObject": DescriptionComponent
 };
 
