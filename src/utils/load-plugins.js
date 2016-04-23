@@ -11,7 +11,7 @@ var loadPlugins = function (plugins) {
 
 var loadPlugin = function (plugin) {
 	var pluginObject;
-	if (plugin[0] == '.') {
+    if (/^\./.test(plugin)) {
 		// require() a path name
 		pluginObject = require(__dirname + '/../' + plugin);
 	} else {
