@@ -21,7 +21,7 @@ function updateUser(userId, user){
 	 	user.password = hashPassword(user.password);
         toSet.password = user.password;
     }
-    if(user.username) toSet.username = user.username;
+    //if(user.username) toSet.username = user.username;
     if(user.name) toSet.name = user.name;
     var setObj = { $set : toSet}
 	return this.db.collection("users").updateOne({"username":userId }, setObj);
@@ -33,9 +33,8 @@ function deleteUser(userId){
 }
 
 function authUser(username, password){
-	password = crypto.createHash("md5").update(password).digest("hex");
-	console.log(username, password);
-	return this.db.collection("users").findOne({"username":username});
+	password = hashPassword(password);
+	return this.db.collection("users").findOne({"username":username, "password" : password });
 }
 
 function hashPassword(password){

@@ -21,6 +21,10 @@
         "./information-providers/demo.js",
         "./information-providers/dropbox.js"
     ],
+    "files": {
+        "storageService": "./storage-services/demo.js",
+        "tmpFolder": "./files/tmp/"
+    },
     "components": [
         "./components/description"
     ],

@@ -10,11 +10,12 @@ import {loadPlugins} from '../utils/load-plugins';
  * the information from them.
  */
 var importInformation = function() {
+
 	// Use a promise for synchronisation
 	var sync = Promise.resolve();
 	
 	// get the providers from the config file.
-	var providerConfig = config.get('informationProviders') || {};
+	var providerConfig = config.get('informationProviders') || [];
 	var providers = loadPlugins(providerConfig);
 
 	// sync each information provider

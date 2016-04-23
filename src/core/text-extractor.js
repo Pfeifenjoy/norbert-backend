@@ -5,6 +5,7 @@
 import {spawn} from 'child_process'
 
 var getDocumentText = function (file_name) {
+
     var p = new Promise((resolve, reject) => {
         let text = '';
         let process = spawn('pdftotext', [file_name, '-']);
@@ -36,10 +37,37 @@ var extractText = function(entry) {
         '2': ''     // text from documents
     };
 
-    result[0] = entry.title || '';
-    result[1] = entry.getText();
-    // TODO: Tags
     
-    let c
+    let title = entry.title || '';
+    // TODO: Tags
+
+    let texts = '';
+    let files = [];
+
+    for (component of entry.components) {
+        let compText = component.getText();
+        let compFiles = component.getFiles();
+        texts = texts + compText;
+        files = files.concat(compFiles);
+    }
+
+    let filesToText = files.map(file => {
+        let tmpFile = file.getTemporary();
+        let docText = tmpFile
+            .then(obj => {
+                return getDocumentText(obj.filename);
+            });
+        let cleanup = Promise.all([tmpFile, after(docText)])
+            .then(values => {
+                let [obj, text] = values;
+                obj.unlink();
+                return text;
+            });
+        return cleanup;
+    });
+
+
+
+    
 }
 

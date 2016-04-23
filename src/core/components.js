@@ -127,6 +127,10 @@ class Component {
     }
 
     get dbRepresentation() {
+        if (typeof this.getDataDbRepresentation == 'function') {
+            this._obj.data = this.getDataDbRepresentation();
+            this._data = this._obj.data;
+        }
         return this._obj;
     }
 

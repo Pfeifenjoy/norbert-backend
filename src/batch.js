@@ -10,7 +10,6 @@ import core from './core/core';
 
 core.createCore()
 	.then(function (core){
-
 		console.log("Importing Information");
 		core.importInformation()
 			.then(function(){
