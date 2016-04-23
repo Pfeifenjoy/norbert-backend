@@ -25,7 +25,8 @@
         "tmpFolder": "./files/tmp/"
     },
     "components": [
-        "./components/description"
+        "./components/description.js",
+        "./components/document.js"
     ],
     "dropbox": {
         "token": ""

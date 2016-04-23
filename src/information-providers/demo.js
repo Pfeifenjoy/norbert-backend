@@ -5,7 +5,7 @@ import {Information} from './../core/information';
 var sync = function(infoManager){
 
     // Create a description component and fill it with some text.
-    let desc = createComponent('components-description')
+    let desc = createComponent('components-description');
     desc.text = "Ich bin eine Beschreibung!";
 
     // Add it to a new Information
