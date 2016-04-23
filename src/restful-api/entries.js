@@ -1,5 +1,5 @@
 /**
- * @author Arwed Mett
+ * @author Arwed Mett,Simon Oswald
  */
 import { Router } from 'express';
 import assert from 'assert';
@@ -64,4 +64,22 @@ router.put("/:entryId", (req, res) => {
 
 })
 
+router.get("/:entryId", (req,res) => {
+    req.app.core.getEntry(req.params.entryId)
+    .then(entry => {
+        res.json({
+            entry
+        })
+    })
+    .catch(e => {
+        console.error(e);
+        res.status(500).send('Could not find entry.')
+    })
+}
+
+router.delete("/:entryId", (req,res) => {
+    
+})
+
+router.
 export default router;

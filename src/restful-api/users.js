@@ -59,6 +59,7 @@ router.post("/login", (req, res) => {
     req.app.core.authUser(username, password)
     .then(user => {
         req.session.user = {
+            id      : user._id
             username: user.username
         };
         req.session.authenticated = true;
@@ -75,7 +76,7 @@ router.post("/logout" ,(req,res) =>{
     if(req.session.user.username == username){
         req.session.authenticated = false;
         //because its faster than delete
-        req.session.user.username = undefined;
+        req.session.user = undefined;
         res.send('User succesfully logged out');
     }
 })
