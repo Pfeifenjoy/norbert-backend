@@ -3,6 +3,7 @@
  */
 import { Router } from 'express';
 import assert from 'assert';
+import { ObjectID }from 'mongodb';
 
 let router = new Router;
 
@@ -26,6 +27,7 @@ router.post("/", (req, res) => {
     entry.owned_by = owned_by;
     entry.components = components;
     entry.tags = tags;
+    entry.equality_group = new ObjectID();
     req.app.core.createEntry(entry.dbRepresentation).then(entry => {
         res.json({
             message: "Entry successfully created.",
@@ -87,6 +89,11 @@ router.delete("/:entryId", (req,res) => {
         res.status(500).send('Could not delete entry.');
     })
 })
+
+
+
+
+
 
 
 export default router;

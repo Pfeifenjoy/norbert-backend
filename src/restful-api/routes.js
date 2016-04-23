@@ -10,7 +10,7 @@ const MongoStore = connect(session);
 //subroutes
 import users from "./users";
 import entries from "./entries";
-
+import newsfeed from "./newsfeed";
 
 
 export function initialRoutes(core) {
@@ -27,6 +27,7 @@ export function initialRoutes(core) {
     // add the routes
     router.use('/users', users);
     router.use("/entries", entries);
+    router.use("/newsfeed", newsfeed);
     
     return router;
 }
