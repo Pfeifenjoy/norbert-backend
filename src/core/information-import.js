@@ -14,7 +14,7 @@ var importInformation = function() {
 	var sync = Promise.resolve();
 	
 	// get the providers from the config file.
-	var providerConfig = config.get('informationProviders') || {};
+	var providerConfig = config.get('informationProviders') || [];
 	var providers = loadPlugins(providerConfig);
 
 	// sync each information provider
