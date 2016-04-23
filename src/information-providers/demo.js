@@ -2,7 +2,7 @@ import {ObjectID} from 'mongodb';
 import {createComponent} from './../core/components';
 import {Information} from './../core/information';
 
-var sync =  function(infoManager){
+var sync = function(infoManager){
 
     // Create a description component and fill it with some text.
     let desc = createComponent('components-description')

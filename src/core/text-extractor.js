@@ -68,6 +68,6 @@ var extractText = function(entry) {
 
 
 
-    
+
 }
 

@@ -22,6 +22,10 @@ class DescriptionComponent extends Component{
     getFiles() {
         return [];
     }
+
+    getNotifications() {
+         return [];
+    }
 }
 
 module.exports = {

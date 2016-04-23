@@ -34,9 +34,13 @@ var checkComponent = function(component) {
  *      component type given in dbObject.
  */
 var loadComponent = function (dbObject) {
+
+    // It is already a component?
+    // --> create a copy so that the old object 
+    //     does not influence the new object
     if (dbObject instanceof Component)
     {
-        return dbObject;
+        dbObject = Object.assign({}, dbObject.dbRepresentation);
     }
 
     var components = getComponentPlugins();
@@ -117,6 +121,11 @@ class Component {
         }
         if (typeof this.getFiles !== 'function') {
             console.log('The function "getFiles" needs to be implemented for every component class.');
+            console.log('Fix your code and try again!');
+            process.exit(1);
+        }
+        if (typeof this.getNotifications !== 'function') {
+            console.log('The function "getNotifications" needs to be implemented for every component class.');
             console.log('Fix your code and try again!');
             process.exit(1);
         }

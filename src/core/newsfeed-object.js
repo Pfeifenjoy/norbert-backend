@@ -14,14 +14,20 @@ class NewsFeedObject {
             this._obj.dirty = true;
         }
         this._obj.created_at = this._obj.created_at || Date.now();
-        this.components = loadComponents(this._obj.components);
+        this._components = loadComponents(this._obj.components);
     }
 
+    /**
+     * Unique ID
+     */
     get id() {
         // the (database) id. Might be undefined!
         return this._obj._id;
     }
 
+    /**
+     * Title
+     */
     get title(){
         return this._obj.title;
     }
@@ -30,6 +36,10 @@ class NewsFeedObject {
         this._obj.title = value;
     }
 
+    /**
+     * Timestamp that specifies, when it was created.
+     * (Unit: Milliseconds)
+     */
     get createdAt() {
          return this._obj.created_at;
     }
@@ -38,6 +48,21 @@ class NewsFeedObject {
         this._obj.created_at = value;
     }
 
+    /**
+     * The components
+     */
+    get components() {
+        return loadComponents(this._components);
+    }
+
+    set components(value) {
+        this._components = loadComponents(value);
+    }
+
+    /**
+     * Is it necessary for the batchprocess to reprocess it?
+     * (Search index, Recommendations, ...)
+     */
     get dirty() {
          return this._obj.dirty;
     }
@@ -46,11 +71,33 @@ class NewsFeedObject {
          this._obj.dirty = value;
     }
 
+    /**
+     * Returns all notifications, collected from all the components.
+     */
+    get notifications() {
+        let result = this.components.map(
+            component => component.getNotifications()
+        ).reduce(
+            (a, b) => a.concat(b)
+        );
+        return result;
+    }
+
+    /**
+     * Returns an object that can be stored in the database.
+     */
     get dbRepresentation() {
-        var components = this.components.map(
-                component => component.dbRepresentation);
-        var dbObj = Object.assign({}, this._obj);
+
+        // serialize the components
+        let components = this.components.map(
+            component => component.dbRepresentation
+        );
+
+        // assemble the object for the database.
+        let dbObj = Object.assign({}, this._obj);
         dbObj.components = components;
+
+        // return
         return dbObj;
     }
 };
