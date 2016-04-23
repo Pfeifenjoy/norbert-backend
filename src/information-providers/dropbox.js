@@ -180,6 +180,15 @@ let evaluateEntry = (entry) => {
 	}
 	return prom;
 }
+/*
+{
+	"id": 123,
+	"created_at": timestamp,
+	"dirty": false,
+	"hidden_for": [],
+	"title": filename,
+	"components": [{}]
+}*/
 
 // Dropbox APIv2 
 /* getID
