@@ -8,6 +8,7 @@ var querystring = require('querystring');
 var fs = require('fs');
 
 const rpcURL = "api.dropboxapi.com";
+const cursorFilepath = './files/dropbox/cursor.txt';
 
 let token = "";
 let path_prefix = "";
@@ -18,49 +19,54 @@ let reset = false;
 var sync = function(infoManager) {
 	console.log("Dropbox here!");
 
-	// Get needed data from config
-	initCrawler();
-
-	// Get changes from Server
-	return getData().then(data => {
-			// Save cursor
-			//config.set('dropbox.cursor', cursor);
-
-			if (reset) {
-				// Clear all information from dropbox in database!
-
-			}
-
-			// Get all entries from response
-			let arrayEntries = [];
-			data.forEach(d => {
-				arrayEntries.push(d.entries);
-			});
-
-			if (arrayEntries.length > 0) {
-				// Concat all entries
-				let allEntries = arrayEntries.reduce((previousValue, currentValue) => {
-					return previousValue.concat(currentValue);
+	// Get needed data from config	
+	return initCrawler().then(() => {
+		// Get changes from Server
+		return getData().then(data => {
+				// Save cursor
+				fs.writeFile(cursorFilepath, cursor, err => {
+					if (err) {
+						return console.log(err);
+					}
 				});
 
-				let sync = Promise.resolve();
+				if (reset) {
+					// Clear all information from dropbox in database!
 
-				allEntries.forEach((item) => {
-					sync = sync.then(() => {
-						return evaluateEntry(item);
+				}
+
+				// Get all entries from response
+				let arrayEntries = [];
+				data.forEach(d => {
+					arrayEntries.push(d.entries);
+				});
+
+				if (arrayEntries.length > 0) {
+					// Concat all entries
+					let allEntries = arrayEntries.reduce((previousValue, currentValue) => {
+						return previousValue.concat(currentValue);
 					});
-				});
 
-				return sync;
+					let sync = Promise.resolve();
+
+					allEntries.forEach((item) => {
+						sync = sync.then(() => {
+							return evaluateEntry(item);
+						});
+					});
+
+					return sync;
 
 
-			}
+				}
 
-		})
-		.catch(err => {
-			console.log(err);
-		})
-
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	}).catch(err => {
+		console.log(err);
+	});
 
 	//return infoManager.insert({
 	//	"title": "Hallo Welt!"
@@ -69,9 +75,9 @@ var sync = function(infoManager) {
 
 module.exports = {
 	"pluginName": "info-provider-dropbox",
-    "pluginObject": {
-        "sync": sync
-    }
+	"pluginObject": {
+		"sync": sync
+	}
 };
 
 
@@ -79,15 +85,37 @@ let initCrawler = () => {
 
 	token = config.get('dropbox.oAuthToken');
 	path_prefix = config.get('dropbox.informationPath');
-	cursor = config.get('dropbox.cursor');
 
 	if (token === undefined || path_prefix === undefined) {
 		throw "There is an error in the config file: Setting dropbox.oAuthToken, dropbox.informationPath is required!";
 	}
 
-	if (cursor === undefined) {
-		config.set('dropbox.cursor', '');
-	}
+	// Get cursor from cursor file
+	// Check if file exists
+	return new Promise((resolve, reject) => {
+		fs.stat(cursorFilepath, (err, stat) => {
+			if (err == null) {
+				fs.readFile(cursorFilepath, 'utf8', (err, data) => {
+					if (err) {
+						return console.log(err);
+					}
+					cursor = data;
+					resolve();
+				});
+
+			} else if (err.code == 'ENOENT') {
+				cursor = "";
+				fs.writeFile(cursorFilepath, cursor, err => {
+					if (err) {
+						return console.log(err);
+					}
+					resolve();
+				});
+			} else {
+				reject(err.code);
+			}
+		});
+	});
 }
 
 let getData = () => {
@@ -152,50 +180,6 @@ let evaluateEntry = (entry) => {
 	}
 	return prom;
 }
-
-/*
-let evaluteEntry = (position) => {
-	// check if [<path>, metadata != null]
-	if (!(entries[position][1] === null)) {
-
-		if (entries[position]["is_dir"] === false) {
-
-			// Get id of the file if its an interesting file
-			return that.getID(entries[position].rev).then(id => {
-
-					console.log(id);
-
-					// Compare if id exists in DB
-
-					// if ID exists in DB
-					// Update current DB status for the file
-
-					// Else create new Entry
-
-					// Process next Entry
-					if (++position < entries.length) {
-						return evaluteEntry(position);
-					}
-
-				})
-				.catch(error => {
-					console.log(error);
-				});
-		}
-	}
-	// metadata is null
-	else {
-
-		// Delete all entries with that path and sub path
-
-
-		// Process next Entry
-		if (++position < entriesArray.length) {
-			return evaluteEntry(position);
-		}
-
-	}
-}*/
 
 // Dropbox APIv2 
 /* getID
@@ -271,6 +255,8 @@ let delta = () => {
 		cursor: cursor,
 		path_prefix: path_prefix
 	});
+
+	console.log("Delta: " + cursor);
 
 	// An object of options to indicate where to post to
 	var post_options = {

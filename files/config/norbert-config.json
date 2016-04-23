@@ -19,7 +19,7 @@
     },
     "informationProviders": [
         "./information-providers/demo.js",
-        "./information-providers/dropboxoauth.js"
+        "./information-providers/dropbox.js"
     ],
     "components": [
         "./components/description"
@@ -27,11 +27,10 @@
     "dropbox": {
         "oAuthToken": "ht2RTMexv-8AAAAAAAACtPP9DgipsEJbzNfvW8q0MIDdCARzO5UuUVvISn3A9Jih",
         "informationPath": "/DHBW - TINF14AIBC",
-        "cursor": "",
-        "token": "",
         "uid": "253849555",
         "informationPathID": "udMU630FO4UAAAAAAAAAAg",
         "storagePath": "/test",
-        "storagePathID": "udMU630FO4UAAAAAAAABNA"
+        "storagePathID": "udMU630FO4UAAAAAAAABNA",
+        "token": ""
     }
 }

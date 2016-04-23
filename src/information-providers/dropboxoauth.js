@@ -11,20 +11,22 @@ const APP_KEY = "wr6x0p7m1ti0xr3";
 const APP_SECRET = "32n05z1iigu0tns";
 const OAUTH_URL = "https://www.dropbox.com/1/oauth2/authorize?client_id=" + APP_KEY + "&response_type=code";
 
-let oAuthCode = "";
-let sharedPath = "";
+let infoPath = "";
 let storagePath = "";
 let token = "";
 let uid = "";
 
 var sync = function(infoManager) {
-	console.log("-Dropbox Ordner für Norbert freigeben-" + "\n");
+	console.log("\n" + "-- Dropbox für Norbert freigeben --" + "\n");
 	console.log("Bitte besuche folgende Seite und erlaube Norbert - Your StudyBuddy Zugriff auf die Dropbox:");
 	console.log(OAUTH_URL + "\n");
 
 	return getCode().then(() => {
-		console.log("finished");
-		// Get next Stuff...
+		return getInfoPath().then(() => {
+			return getStoragePath().then(() => {
+				console.log("Norbert - Your StudyBuddy hat nun alle Informationen um mit deiner Dropbox zu interagieren!");
+			});
+		});
 	});
 
 }
@@ -39,19 +41,20 @@ module.exports = {
 };
 
 let getCode = () => {
-	const question = "Kopiere den erhaltenen Code hier hinein:";
+	const question = "Kopiere den erhaltenen Code hier hinein: ";
 
 	return getConsoleInput(question).then(code => {
-		oAuthCode = getConsoleInput(question);
+
 		console.log("Frage OAuth Token an...");
 
-		return getToken().then(data => {
-				console.log("OAuth Token erhalten! \n");
+		return getToken(code).then(data => {
+				console.log("OAuth Token erhalten!");
 
 				token = data["access_token"];
 				uid = data["uid"];
 
-				// Write Token to config
+				config.set("dropbox.uid", uid);
+				config.set("dropbox.oAuthToken", token);
 			})
 			.catch(error => {
 				console.log(error["error_description"]);
@@ -59,6 +62,63 @@ let getCode = () => {
 			});
 	})
 
+
+}
+
+let getInfoPath = () => {
+	const question = "In welchen Ordner soll Norbert nach Informationen suchen? '/pfad': ";
+
+	return getConsoleInput(question).then(infPath => {
+
+		if (infPath === "/") {
+			infoPath = infPath;
+			config.set("dropbox.informationPath", infoPath);
+			config.set("dropbox.informationPathID", "");
+			return;
+		}
+
+		return checkPath(infPath).then(pathID => {
+
+				infoPath = infPath;
+
+				let pathIDArray = pathID.split(":");
+
+				config.set("dropbox.informationPath", infoPath);
+				config.set("dropbox.informationPathID", pathIDArray[pathIDArray.length - 1]);
+			})
+			.catch(error => {
+				console.log(error["error_description"]);
+				return getInfoPath();
+			});
+	});
+}
+
+let getStoragePath = () => {
+	const question = "In welchen Ordner soll Norbert Dateien ablegen? '/pfad': ";
+
+	return getConsoleInput(question).then(storePath => {
+
+		if (storePath === "/") {
+			storagePath = storePath;
+			config.set("dropbox.storagePath", storagePath);
+			config.set("dropbox.storagePathID", "");
+			return;
+		}
+
+		return checkPath(storePath).then(pathID => {
+
+				storagePath = storePath;
+
+				let pathIDArray = pathID.split(":");
+
+				config.set("dropbox.storagePath", storagePath);
+				config.set("dropbox.storagePathID", pathIDArray[pathIDArray.length - 1]);
+			})
+			.catch(error => {
+				console.log(error["error_description"]);
+				return getStoragePath();
+			});
+	});
 
 }
 
@@ -71,9 +131,8 @@ let getConsoleInput = (question) => {
 	});
 
 	return new Promise((resolve, reject) => {
-		console.log("Bin im Promise");
-		readInput.question(question, (answer) => {
-			console.log("Werde nicht ausgeführt...");
+		readInput.question(question, answer => {
+			readInput.close();
 			resolve(answer);
 		});
 	});
@@ -81,7 +140,7 @@ let getConsoleInput = (question) => {
 
 
 // Returns a json with the OAuthToken
-let getToken = () => {
+let getToken = (oAuthCode) => {
 
 	const domain = "api.dropboxapi.com";
 	const pathUrl = "/oauth2/token";
@@ -175,7 +234,7 @@ let checkPath = (path) => {
 				if (res.statusCode === 200) {
 					resolve(JSON.parse(response)["id"]);
 				} else {
-					reject();
+					reject(JSON.parse(response));
 				}
 
 			});
