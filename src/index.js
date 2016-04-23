@@ -62,7 +62,7 @@ core.createCore()
 		return app.listen(3001);
 	})
 	.then(function(){
-		console.log('Server is listening at port 8080.');
+		console.log('Server is listening at port 3001.');
 	})
 	.catch(function (err){
 		console.log("Something went wrong, could not start the server:");

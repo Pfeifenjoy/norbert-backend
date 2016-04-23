@@ -10,24 +10,24 @@ import {loadPlugins} from '../utils/load-plugins';
  * the information from them.
  */
 var importInformation = function() {
-	// Use a promise for synchronisation
-	var sync = Promise.resolve();
-	
-	// get the providers from the config file.
-	var providerConfig = config.get('informationProviders') || {};
-	var providers = loadPlugins(providerConfig);
+    // Use a promise for synchronisation
+    var sync = Promise.resolve();
+    
+    // get the providers from the config file.
+    var providerConfig = config.get('informationProviders') || [];
+    var providers = loadPlugins(providerConfig);
 
-	// sync each information provider
-	for (var name of Object.keys(providers)) {
-		let provider = providers[name];
-		sync = sync.then(() => {
-			var dbAccess = new InfoManager(name, this.db);
-			return provider.sync(dbAccess);
-		});
-	}
+    // sync each information provider
+    for (var name of Object.keys(providers)) {
+        let provider = providers[name];
+        sync = sync.then(() => {
+            var dbAccess = new InfoManager(name, this.db);
+            return provider.sync(dbAccess);
+        });
+    }
 
-	// return the promise
-	return sync;
+    // return the promise
+    return sync;
 };
 
 /**
