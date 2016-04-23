@@ -73,13 +73,20 @@ router.get("/:entryId", (req,res) => {
     })
     .catch(e => {
         console.error(e);
-        res.status(500).send('Could not find entry.')
+        res.status(400).send('Could not find entry.')
     })
-}
-
-router.delete("/:entryId", (req,res) => {
-    
 })
 
-router.
+router.delete("/:entryId", (req,res) => {
+    req.app.core.deleteEntry(req.params.entryId, req.session.user.id)
+    .then(function(){
+        res.send('Deleted Entry.');
+    })
+    .catch(e => {
+        console.error(e);
+        res.status(500).send('Could not delete entry.');
+    })
+})
+
+
 export default router;
