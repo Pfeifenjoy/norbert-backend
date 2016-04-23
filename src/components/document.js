@@ -28,10 +28,6 @@ class DocumentComponent extends Component {
     }
 }
 
-
-
-
-
 module.exports = {
 	"pluginName": 'components-document',
 	"pluginObject": DescriptionComponent
