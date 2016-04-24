@@ -2,18 +2,18 @@
  * @author: Tobias Dorra
  */
 
-var settings = require('../utils/configuration.js');
-var mongo = require('mongodb');
-var users = require('./users.js');
-var infos = require('./information-import.js');
-var entries = require("./entries");
-var newsfeed = require("./newsfeed");
-
+import config from '../utils/configuration.js';
+import mongo from 'mongodb';
+import users from './user-queries';
+import infos from './information-queries';
+import infos_import from './information-import';
+import entries from './entry-queries';
+import newsfeed from './newsfeed-queries';
 
 /**
  * Core:
  * A core object is a collection of functions
- * working on a database that is stored in 
+ * working on a database that is stored in
  * an instance of this class.
  */
 function Core(dbConnection){
@@ -23,19 +23,20 @@ function Core(dbConnection){
 // Assign the modules to the core
 Object.assign(Core.prototype, users);
 Object.assign(Core.prototype, infos);
+Object.assign(Core.prototype, infos_import);
 Object.assign(Core.prototype, entries);
 Object.assign(Core.prototype, newsfeed);
 
 /**
  * createCore:
  * A utility method that creates a core using
- * the default database connection configured 
+ * the default database connection configured
  * at 'database.url' in the config file.
  */
 var default_db_url = null;
 var default_db = null;
 function createCore() {
-	var url = settings.get('database.url');
+	var url = config.get('database.url');
 	if (url === undefined) {
 		throw "There is an error in the config file: Setting database.url is required.";
 	}

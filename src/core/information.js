@@ -1,3 +1,4 @@
+
 /**
  * @author: Tobias Dorra
  */
@@ -53,8 +54,6 @@ class Information extends NewsFeedObject {
     set extra(value) {
         this._obj.extra = value;
     }
-    
+
 }
-
 module.exports.Information = Information;
-

@@ -25,18 +25,22 @@ var checkComponent = function(component) {
 /**
  * Loads a single component.
  *
- * dbObject: The representation of the 
+ * dbObject: The representation of the
  *      component from the database.
  *
  * returns: The component object,
  *      or undefined if no component
- *      type could be found for the 
+ *      type could be found for the
  *      component type given in dbObject.
  */
 var loadComponent = function (dbObject) {
+
+    // It is already a component?
+    // --> create a copy so that the old object
+    //     does not influence the new object
     if (dbObject instanceof Component)
     {
-        return dbObject;
+        dbObject = Object.assign({}, dbObject.dbRepresentation);
     }
 
     var components = getComponentPlugins();
@@ -85,8 +89,8 @@ var createComponent = function(type, generated=false) {
  * DO NOT USE THIS CLASS DIRECTLY!
  * IN JAVA OR C++ IT WOULD BE ABSTRACT!
  *
- * If you simply want to convert a 
- * Component object from the DB into 
+ * If you simply want to convert a
+ * Component object from the DB into
  * a proper Javascript thingie with
  * a proper, well defined Interface,
  * you can use the loadComponent() function.
@@ -95,7 +99,7 @@ var createComponent = function(type, generated=false) {
  * you can use the createComponent() function.
  */
 class Component {
-    
+
     /**
      * Creates a new component.
      *
@@ -117,6 +121,11 @@ class Component {
         }
         if (typeof this.getFiles !== 'function') {
             console.log('The function "getFiles" needs to be implemented for every component class.');
+            console.log('Fix your code and try again!');
+            process.exit(1);
+        }
+        if (typeof this.getNotifications !== 'function') {
+            console.log('The function "getNotifications" needs to be implemented for every component class.');
             console.log('Fix your code and try again!');
             process.exit(1);
         }
@@ -148,4 +157,3 @@ module.exports.createComponent = createComponent;
 module.exports.loadComponent = loadComponent;
 module.exports.loadComponents = loadComponents;
 module.exports.Component = Component;
-
