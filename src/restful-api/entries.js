@@ -29,10 +29,7 @@ router.post("/", (req, res) => {
     entry.tags = tags;
     entry.equality_group = new ObjectID();
     req.app.core.createEntry(entry.dbRepresentation).then(entry => {
-        res.json({
-            message: "Entry successfully created.",
-            entry
-        })
+        res.json(entry)
     })
     .catch(() => {
         res.status(500).send("Could not create entry.")
@@ -54,10 +51,7 @@ router.put("/:entryId", (req, res) => {
 
     req.app.core.updateEntry(req.params.entryId, entry)
     .then(entry => {
-        res.json({
-            message: "updated entry",
-            entry
-        })
+        res.json(entry)
     })
     .catch(e => {
         console.error(e);
