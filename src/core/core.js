@@ -9,6 +9,7 @@ import infos from './information-queries';
 import infos_import from './information-import';
 import entries from './entry-queries';
 import newsfeed from './newsfeed-queries';
+import file from "./file";
 
 /**
  * Core:
@@ -26,6 +27,7 @@ Object.assign(Core.prototype, infos);
 Object.assign(Core.prototype, infos_import);
 Object.assign(Core.prototype, entries);
 Object.assign(Core.prototype, newsfeed);
+Object.assign(Core.prototype, file);
 
 /**
  * createCore:

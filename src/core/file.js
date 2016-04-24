@@ -1,5 +1,5 @@
 /**
- * @author: Tobias Dorra
+ * @author: Tobias Dorra, Arwed Mett
  */
 import config from './../utils/configuration';
 import {loadPlugin} from './../utils/load-plugins';
@@ -27,6 +27,10 @@ function deleteFile(filename) {
             }
         })
     })
+}
+
+function createTmpFileStream() {
+    return fs.createWriteStream(buildTempFileName());
 }
 
 let tmpFileCounter = 0;
@@ -215,5 +219,8 @@ class File {
 
 }
 
-module.exports.File = File;
+module.exports = {
+    File,
+    createTmpFileStream
+}
 
