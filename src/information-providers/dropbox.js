@@ -2,10 +2,18 @@
  * @author: Philipp Pütz
  */
 import config from '../utils/configuration.js';
-import {ObjectID} from 'mongodb';
-import {createComponent} from './../core/components';
-import {Information} from './../core/information';
-import {File} from './../core/files';
+import {
+	ObjectID
+} from 'mongodb';
+import {
+	createComponent
+} from './../core/components';
+import {
+	Information
+} from './../core/information';
+import {
+	File
+} from './../core/files';
 
 var https = require('https');
 var querystring = require('querystring');
@@ -20,8 +28,12 @@ let path_prefix = "";
 let cursor = "";
 let reset = false;
 
-var sync = function(infoManager) {
+let infoManager;
+
+var sync = function(infManager) {
 	console.log("Dropbox here!");
+
+	infoManager = infManager;
 
 	// Get needed data from config	
 	return initCrawler().then(() => {
@@ -36,32 +48,14 @@ var sync = function(infoManager) {
 
 				if (reset) {
 					// Clear all information from dropbox in database!
-
-				}
-
-				// Get all entries from response
-				let arrayEntries = [];
-				data.forEach(d => {
-					arrayEntries.push(d.entries);
-				});
-
-				if (arrayEntries.length > 0) {
-					// Concat all entries
-					let allEntries = arrayEntries.reduce((previousValue, currentValue) => {
-						return previousValue.concat(currentValue);
-					});
-
-					let sync = Promise.resolve();
-
-					allEntries.forEach((item) => {
-						sync = sync.then(() => {
-							return evaluateEntry(item);
-						});
-					});
-
-					return sync;
-
-
+					console.log("Clearing databse");
+					//return infoManager.remove().then(() => {
+						// Process received data
+						return processEntries(data);
+					//});
+				} else {
+					// Process received data
+					return processEntries(data);
 				}
 
 			})
@@ -84,6 +78,30 @@ module.exports = {
 	}
 };
 
+let processEntries = (data) => {
+	// Get all entries from response
+	let arrayEntries = [];
+	data.forEach(d => {
+		arrayEntries.push(d.entries);
+	});
+
+	let sync = Promise.resolve();
+
+	if (arrayEntries.length > 0) {
+		// Concat all entries
+		let allEntries = arrayEntries.reduce((previousValue, currentValue) => {
+			return previousValue.concat(currentValue);
+		});
+
+		allEntries.forEach((item) => {
+			sync = sync.then(() => {
+				return evaluateEntry(item);
+			});
+		});
+	}
+
+	return sync;
+}
 
 let initCrawler = () => {
 
@@ -152,6 +170,9 @@ let getData = () => {
 }
 
 let evaluateEntry = (entry) => {
+
+	console.log("Evaluating entry!");
+
 	var prom = Promise.resolve();
 	// check if [<path>, metadata != null]
 	if (!(entry[1] === null)) {
@@ -159,11 +180,14 @@ let evaluateEntry = (entry) => {
 		if (entry[1]["is_dir"] === false) {
 
 			// Get id of the file if its an interesting file
-			prom = getID(entry[1].rev).then(id => {
+			prom = getID(entry[1].rev).then(responseID => {
 
-					console.log(id);
+					let extractIDArray = responseID.split(':');
+					let id = extractIDArray[extractIDArray.length - 1];
 
 					// Compare if id exists in DB
+					//infoManager.findOne();
+
 					// findOne(filter.extra(id))
 					//cursor -> Information Objekt
 
@@ -173,22 +197,32 @@ let evaluateEntry = (entry) => {
 
 					// Else create new Entry
 					// Create a description component and fill it with some text.
+
+					let fileObject = {
+						"id": id,
+						"rev": entry[1].rev,
+						"path": entry[1].path,
+						"mime_type": entry[1]["mime_type"]
+					}
+
+					let extractFilenameArray = entry[1].path.split('/');
+					let filename = extractFilenameArray[extractFilenameArray.length - 1];
+
 					let myFile = new File();
-					myFile.setToRemoteFile(json , filename);
+					myFile.setToRemoteFile(fileObject, filename);
 
 					let docu = createComponent('components-document');
 					docu.file = myFile;
 
 					// Add it to a new Information
 					let info = new Information();
-					info.title = ;// Dateiname
+					info.title = filename;
 					info.components = [
 						docu
 					];
 
 					// Insert the Information into the database.
-					let promise = infoManager.insert(info);
-					// return promise
+					return infoManager.insert(info);
 
 				})
 				.catch(error => {
