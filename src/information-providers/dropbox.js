@@ -40,19 +40,20 @@ var sync = function(infManager) {
 		// Get changes from Server
 		return getData().then(data => {
 				// Save cursor
-				fs.writeFile(cursorFilepath, cursor, err => {
+				/*fs.writeFile(cursorFilepath, cursor, err => {
 					if (err) {
 						return console.log(err);
 					}
-				});
+				});*/
+				fs.writeFileSync(cursorFilepath, cursor);
 
 				if (reset) {
 					// Clear all information from dropbox in database!
 					console.log("Clearing databse");
-					//return infoManager.remove().then(() => {
-						// Process received data
-						return processEntries(data);
-					//});
+					return infoManager.remove({}).then(() => {
+					// Process received data
+					return processEntries(data);
+					});
 				} else {
 					// Process received data
 					return processEntries(data);
@@ -217,6 +218,7 @@ let evaluateEntry = (entry) => {
 					// Add it to a new Information
 					let info = new Information();
 					info.title = filename;
+					info.extra = fileObject;
 					info.components = [
 						docu
 					];
