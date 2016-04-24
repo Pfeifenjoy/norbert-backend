@@ -13,7 +13,7 @@ var importInformation = function() {
 
 	// Use a promise for synchronisation
 	var sync = Promise.resolve();
-	
+
 	// get the providers from the config file.
 	var providerConfig = config.get('informationProviders') || [];
 	var providers = loadPlugins(providerConfig);
@@ -22,6 +22,7 @@ var importInformation = function() {
 	for (var name of Object.keys(providers)) {
 		let provider = providers[name];
 		sync = sync.then(() => {
+            console.log('Started sync: ', name);
 			var dbAccess = new InfoManager(name, this.db);
 			return provider.sync(dbAccess);
 		});
@@ -39,7 +40,7 @@ var enhanceFilter = function(filter, provider){
     return {
         '$and': [
             filter,
-            {'provider':this.provider}
+            {'provider': provider}
         ]};
 };
 
@@ -109,7 +110,7 @@ class InfoManager{
         if (information instanceof Array) {
             insert = information.map(i => preProcess(i, this.provider));
         } else {
-            insert = preProcess(information);
+            insert = preProcess(information, this.provider);
         }
 
         // insert into mongo

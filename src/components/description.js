@@ -7,11 +7,11 @@ class DescriptionComponent extends Component{
         this._data.text = this._data.text || "";
     }
 
-    set description(text) {
+    set text(text) {
         this._data.text = text;
     }
 
-    get description() {
+    get text() {
         return this._data.text;
     }
 
@@ -32,4 +32,3 @@ module.exports = {
 	"pluginName": 'components-description',
 	"pluginObject": DescriptionComponent
 };
-

@@ -4,6 +4,7 @@
 import { Router } from 'express';
 import assert from 'assert';
 import { ObjectID }from 'mongodb';
+import {Entry} from '../core/entry';
 
 let router = new Router;
 
@@ -21,7 +22,7 @@ router.post("/", (req, res) => {
     } catch(e) {
         tags = [];
     }
-    let entry = new req.app.core.Entry();
+    let entry = new Entry();
 
     entry.title = title || "";
     entry.owned_by = owned_by;
@@ -29,10 +30,7 @@ router.post("/", (req, res) => {
     entry.tags = tags;
     entry.equality_group = new ObjectID();
     req.app.core.createEntry(entry.dbRepresentation).then(entry => {
-        res.json({
-            message: "Entry successfully created.",
-            entry
-        })
+        res.json(entry)
     })
     .catch(() => {
         res.status(500).send("Could not create entry.")
@@ -54,10 +52,7 @@ router.put("/:entryId", (req, res) => {
 
     req.app.core.updateEntry(req.params.entryId, entry)
     .then(entry => {
-        res.json({
-            message: "updated entry",
-            entry
-        })
+        res.json(entry)
     })
     .catch(e => {
         console.error(e);

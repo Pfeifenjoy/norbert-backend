@@ -26,7 +26,8 @@
         "tmpFolder": "./files/tmp/"
     },
     "components": [
-        "./components/description"
+        "./components/description.js",
+        "./components/document.js"
     ],
     "dropbox": {
         "oAuthToken": "ht2RTMexv-8AAAAAAAACtPP9DgipsEJbzNfvW8q0MIDdCARzO5UuUVvISn3A9Jih",

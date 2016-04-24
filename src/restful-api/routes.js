@@ -11,6 +11,7 @@ const MongoStore = connect(session);
 import users from "./users";
 import entries from "./entries";
 import newsfeed from "./newsfeed";
+import files from "./files";
 
 
 export function initialRoutes(core) {
@@ -28,6 +29,7 @@ export function initialRoutes(core) {
     router.use('/users', users);
     router.use("/entries", entries);
     router.use("/newsfeed", newsfeed);
+    router.use("/files", files)
     
     return router;
 }

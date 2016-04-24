@@ -3,6 +3,7 @@
  */
 
 import {Component} from './../core/components';
+import {File} from './../core/file';
 
 class DocumentComponent extends Component {
 
@@ -26,10 +27,13 @@ class DocumentComponent extends Component {
     getDataDbRepresentation() {
         return this.file.dbRepresentation;
     }
+
+    getNotifications() {
+      return [];
+    }
 }
 
 module.exports = {
 	"pluginName": 'components-document',
-	"pluginObject": DescriptionComponent
+	"pluginObject": DocumentComponent
 };
-
