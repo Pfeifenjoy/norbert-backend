@@ -53,6 +53,7 @@ function getIcalEntry(value){
 	//start ical at ical[1] to skip the definiton part of the ical; get all infortion to on entry without defitions at the beginning of each line
 	for (var i = 1; i< ical.length; i++){
 		var comp = createComponent('components-description');
+		var notification = null;
 		var info = new Information;
 		
 		var description = getDescription(ical[i]);
@@ -74,7 +75,15 @@ function getIcalEntry(value){
 			var hours = start[4];
 			var min = start[5];
 			comp.text += 'Beginn: '+day+'.'+month+'.'+year+' '+hours+':'+min+'Uhr\n';
+			
+			//Get a Timestamp to sort the entries by date
+			var notification = createComponent('components-notification');
+			var date = new Date(year, month, day, hours, min);
+			var timestamp = date.getTime();
+			notification.date = timestamp;
 		}
+		
+		
 		
 		
 		var end = getEnd(ical[i]);
@@ -87,8 +96,13 @@ function getIcalEntry(value){
 		comp.text += 'Ende: '+day+'.'+month+'.'+year+' '+hours+':'+min+'Uhr\n';
 		}
 		
-		
-		info.components = [comp];
+		if(notification == null){
+			info.components = [comp];
+		}
+		else{
+			info.components = [comp,notification];
+			
+		}
 		result = result.concat([info]);
 		
 	}
