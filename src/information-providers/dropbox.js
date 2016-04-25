@@ -51,8 +51,8 @@ var sync = function(infManager) {
 					// Clear all information from dropbox in database!
 					console.log("Clearing databse");
 					return infoManager.remove({}).then(() => {
-					// Process received data
-					return processEntries(data);
+						// Process received data
+						return processEntries(data);
 					});
 				} else {
 					// Process received data
@@ -183,22 +183,15 @@ let evaluateEntry = (entry) => {
 			// Get id of the file if its an interesting file
 			prom = getID(entry[1].rev).then(responseID => {
 
+					// Extract id
 					let extractIDArray = responseID.split(':');
 					let id = extractIDArray[extractIDArray.length - 1];
 
-					// Compare if id exists in DB
-					//infoManager.findOne();
+					let filter = {
+						"extra.id": id
+					};
 
-					// findOne(filter.extra(id))
-					//cursor -> Information Objekt
-
-					// if ID exists in DB
-					// Update current DB status for the file
-					// update filter;
-
-					// Else create new Entry
-					// Create a description component and fill it with some text.
-
+					// Object with some important information
 					let fileObject = {
 						"id": id,
 						"rev": entry[1].rev,
@@ -206,25 +199,47 @@ let evaluateEntry = (entry) => {
 						"mime_type": entry[1]["mime_type"]
 					}
 
+					// Extract filename
 					let extractFilenameArray = entry[1].path.split('/');
 					let filename = extractFilenameArray[extractFilenameArray.length - 1];
 
+					// Create new file
 					let myFile = new File();
+					// set location of the file
 					myFile.setToRemoteFile(fileObject, filename);
 
+					// Create new document component
 					let docu = createComponent('components-document');
+					// set file to document
 					docu.file = myFile;
 
-					// Add it to a new Information
-					let info = new Information();
-					info.title = filename;
-					info.extra = fileObject;
-					info.components = [
-						docu
-					];
+					// Compare if id exists in DB
+					infoManager.findOne(filter).then(data => {
+						// if ID exists in DB	
+						let storedInformation = new Information(data);
 
-					// Insert the Information into the database.
-					return infoManager.insert(info);
+						storedInformation.title = filename;
+						storedInformation.extra = fileObject;
+						storedInformation.components = [
+							docu
+						];
+
+						// Update current DB status for the file
+						return infoManager.update(storedInformation);
+
+					}).catch(err => {
+						console.log("Creating new Enty");
+						// Else create new Entry			
+						let info = new Information();
+						info.title = filename;
+						info.extra = fileObject;
+						info.components = [
+							docu
+						];
+
+						// Insert the Information into the database.
+						return infoManager.insert(info);
+					});
 
 				})
 				.catch(error => {
@@ -234,10 +249,15 @@ let evaluateEntry = (entry) => {
 	}
 	// metadata is null
 	else {
-
 		// Delete all entries with that path and sub path
-		//delete
+		let filter = {
+			"extra.path": {
+				$regex: RegExp("^" + entry[0]),
+				$options: "im"
+			}
+		};
 
+		return infoManager.delete(filter);
 	}
 	return prom;
 }
