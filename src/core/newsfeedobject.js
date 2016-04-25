@@ -2,7 +2,7 @@
  * Author: Tobias Dorra
  */
 
-import {loadComponents} from './components';
+import {loadComponents} from './component';
 
 class NewsFeedObject {
 
@@ -117,6 +117,18 @@ class NewsFeedObject {
 
         // return
         return dbObj;
+    }
+
+    get userRepresentation() {
+        let components = this.components.map(
+            component => component.userRepresentation
+        );
+
+        let result = {
+            id: this.id,
+            title: this.title,
+            components: components
+        };
     }
 };
 

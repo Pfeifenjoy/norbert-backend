@@ -1,3 +1,4 @@
+
 /**
  * @author Arwed Mett,Simon Oswald
  */
@@ -22,20 +23,20 @@ router.post("/", (req, res) => {
     } catch(e) {
         tags = [];
     }
-    let entry = new Entry();
 
+    let entry = new Entry();
     entry.title = title || "";
     entry.owned_by = owned_by;
     entry.components = components;
     entry.tags = tags;
     entry.equality_group = new ObjectID();
-    req.app.core.createEntry(entry.dbRepresentation).then(entry => {
+    req.app.core.createEntry(entry).then(entry => {
         res.json(entry)
     })
     .catch(() => {
         res.status(500).send("Could not create entry.")
     })
-})
+});
 
 
 router.put("/:entryId", (req, res) => {

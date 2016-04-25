@@ -129,12 +129,34 @@ class Component {
             console.log('Fix your code and try again!');
             process.exit(1);
         }
+        if (typeof this.getDataUserRepresentation !== 'function') {
+            console.log('The function "getDataUserRepresentation" needs to be implemented for every component class.');
+            console.log('Fix your code and try again!');
+            process.exit(1);
+        }
     }
 
+    /**
+     * The name of the actual component type plug in
+     */
     get pluginName() {
          return this._obj['type'];
     }
 
+    /**
+     * Was the component generated automatically? (e.g. by extracting information from a text)
+     */
+    get generated() {
+        return this._obj.generated;
+    }
+
+    set generated(value) {
+        this._obj.generated = value;
+    }
+
+    /**
+     * The representation of the component in the database.
+     */
     get dbRepresentation() {
         if (typeof this.getDataDbRepresentation == 'function') {
             this._obj.data = this.getDataDbRepresentation();
@@ -143,12 +165,17 @@ class Component {
         return this._obj;
     }
 
-    get generated() {
-        return this._obj.generated;
-    }
-
-    set generated(value) {
-        this._obj.generated = value;
+    /**
+     * The representation of the component that can be sent to 
+     * a user. (e.G. over the RESTful API.)
+     * Internal information will be stripped out of the returned
+     * object.
+     */
+    get userRepresentation() {
+        let result = {};
+        result['type'] = this.pluginName;
+        result['data'] = this.getDataUserRepresentation();
+        return result;
     }
 
 }

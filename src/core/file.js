@@ -213,6 +213,9 @@ class File {
      * file at the content provider.
      */
     getUrl() {
+        if (this.state != remote_file) {
+             return undefined;
+        }
         let [ssName, storageService] = getStorageService();
         return storageService.getUrl(this._obj.location);
     }
@@ -221,6 +224,11 @@ class File {
 
 module.exports = {
     File,
+    states: {
+        no_file: no_file,
+        local_file: local_file,
+        remote_file: remote_file
+    },
     createTmpFileStream
 }
 

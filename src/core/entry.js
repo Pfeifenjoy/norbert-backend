@@ -2,7 +2,7 @@
  * @author: Arwed Mett,Simon Oswald
  */
 
-import {NewsFeedObject} from './newsfeed-object';
+import {NewsFeedObject} from './newsfeedobject';
 
 /**
  * Represents an Entry in the newsfeed.
@@ -44,6 +44,10 @@ class Entry extends NewsFeedObject {
     }
     hideForUser(userId) {
         this._obj.hidden_for.concat(userId);
+    }
+    get userRepresentation() {
+        let result = super.userRepresentation;
+        result.tags = this.tags;
     }
 }
 
