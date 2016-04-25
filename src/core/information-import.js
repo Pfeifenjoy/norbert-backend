@@ -23,7 +23,7 @@ var importInformation = function() {
 		let provider = providers[name];
 		sync = sync.then(() => {
             console.log('Started sync: ', name);
-			var dbAccess = new InfoManager(name, this.db);
+			var dbAccess = new InfoManager(name, this);
 			return provider.sync(dbAccess);
 		});
 	}

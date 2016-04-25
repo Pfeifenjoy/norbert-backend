@@ -8,6 +8,7 @@ logs
 npm-debug.log*
 build
 *.tern-project
+*.tern-port
 
 # Runtime data
 pids
