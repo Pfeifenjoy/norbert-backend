@@ -1,4 +1,4 @@
-import {Component} from './../core/components';
+import {Component} from './../core/component';
 
 class DescriptionComponent extends Component{
 

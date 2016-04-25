@@ -1,5 +1,5 @@
 import {ObjectID} from 'mongodb';
-import {createComponent} from './../core/components';
+import {createComponent} from './../core/component';
 import {Information} from './../core/information';
 
 var sync = function(infoManager){

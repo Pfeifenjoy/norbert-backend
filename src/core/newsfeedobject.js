@@ -2,7 +2,7 @@
  * Author: Tobias Dorra
  */
 
-import {loadComponents} from './components';
+import {loadComponents} from './component';
 
 class NewsFeedObject {
 

@@ -2,7 +2,7 @@
  * @author: Tobias Dorra
  */
 
-import {Component} from './../core/components';
+import {Component} from './../core/component';
 import {File} from './../core/file';
 
 class DocumentComponent extends Component {

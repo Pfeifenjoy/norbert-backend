@@ -19,11 +19,11 @@ var importInformation = function() {
 	var providers = loadPlugins(providerConfig);
 
 	// sync each information provider
-	for (var name of Object.keys(providers)) {
+	for (let name of Object.keys(providers)) {
 		let provider = providers[name];
 		sync = sync.then(() => {
             console.log('Started sync: ', name);
-			var dbAccess = new InfoManager(name, this);
+			let dbAccess = new InfoManager(name, this);
 			return provider.sync(dbAccess);
 		});
 	}

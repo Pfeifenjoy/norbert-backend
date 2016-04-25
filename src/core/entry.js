@@ -2,7 +2,7 @@
  * @author: Arwed Mett,Simon Oswald
  */
 
-import {NewsFeedObject} from './newsfeed-object';
+import {NewsFeedObject} from './newsfeedobject';
 
 /**
  * Represents an Entry in the newsfeed.
