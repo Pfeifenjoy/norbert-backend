@@ -18,11 +18,10 @@
         "interval": 60000
     },
     "informationProviders": [
-        "./information-providers/demo.js",
         "./information-providers/dropbox.js"
     ],
     "files": {
-        "storageService": "./storage-services/demo.js",
+        "storageService": "./storage-services/dropbox.js",
         "tmpFolder": "./files/tmp/"
     },
     "components": [
@@ -30,12 +29,11 @@
         "./components/document.js"
     ],
     "dropbox": {
-        "oAuthToken": "ht2RTMexv-8AAAAAAAACtPP9DgipsEJbzNfvW8q0MIDdCARzO5UuUVvISn3A9Jih",
+        "uid": "558779514",
+        "oAuthToken": "TnEik6UKpfAAAAAAAAAADUMl1EmLQWykmW0fYfLI86Ja-jZHtc8URaU8ZKJVdVcB",
         "informationPath": "/DHBW - TINF14AIBC",
-        "uid": "253849555",
-        "informationPathID": "udMU630FO4UAAAAAAAAAAg",
-        "storagePath": "/test",
-        "storagePathID": "udMU630FO4UAAAAAAAABNA",
-        "token": ""
+        "informationPathID": "UKi922iFmBAAAAAAAAAAAw",
+        "storagePath": "/norbert-upload",
+        "storagePathID": "I6avx4OFbFAAAAAAAAAAAQ"
     }
 }

@@ -31,12 +31,15 @@ let reset = false;
 let infoManager;
 
 var sync = function(infManager) {
-	console.log("Dropbox here!");
+	console.log(" - Dropbox Crawler -");
 
 	infoManager = infManager;
 
 	// Get needed data from config	
 	return initCrawler().then(() => {
+
+		console.log("Dropbox Crawler: Getting needed data from server!");
+
 		// Get changes from Server
 		return getData().then(data => {
 				// Save cursor
@@ -49,14 +52,18 @@ var sync = function(infManager) {
 
 				if (reset) {
 					// Clear all information from dropbox in database!
-					console.log("Clearing databse");
+					console.log("Dropbox Crawler: Clearing database...");
 					return infoManager.remove({}).then(() => {
 						// Process received data
-						return processEntries(data);
+						return processEntries(data).then(() => {
+							console.log("Dropbox Crawler: Done with processing data");
+						});
 					});
 				} else {
 					// Process received data
-					return processEntries(data);
+					return processEntries(data).then(() => {
+						console.log("Dropbox Crawler: Done with processing data");
+					});
 				}
 
 			})
@@ -94,13 +101,22 @@ let processEntries = (data) => {
 			return previousValue.concat(currentValue);
 		});
 
-		allEntries.forEach((item) => {
+		console.log("Dropbox Crawler: Processing received data... (this may take some time on first startup!)");
+
+		let progressIntervall = Math.ceil(allEntries.length * 0.1);
+		let percentage = 0;
+
+		allEntries.forEach((item, index) => {
 			sync = sync.then(() => {
-				return evaluateEntry(item);
+				return evaluateEntry(item).then(() => {
+					if ((index + 1) % progressIntervall === 0) {
+						percentage += 10;
+						console.log("Dropbox Crawler: " + percentage + "% done...")
+					}
+				});
 			});
 		});
 	}
-
 	return sync;
 }
 
@@ -171,9 +187,6 @@ let getData = () => {
 }
 
 let evaluateEntry = (entry) => {
-
-	console.log("Evaluating entry!");
-
 	var prom = Promise.resolve();
 	// check if [<path>, metadata != null]
 	if (!(entry[1] === null)) {
@@ -184,8 +197,7 @@ let evaluateEntry = (entry) => {
 			prom = getID(entry[1].rev).then(responseID => {
 
 					// Extract id
-					let extractIDArray = responseID.split(':');
-					let id = extractIDArray[extractIDArray.length - 1];
+					let id = responseID.substring(responseID.lastIndexOf(":") + 1);
 
 					let filter = {
 						"extra.id": id
@@ -200,8 +212,7 @@ let evaluateEntry = (entry) => {
 					}
 
 					// Extract filename
-					let extractFilenameArray = entry[1].path.split('/');
-					let filename = extractFilenameArray[extractFilenameArray.length - 1];
+					let filename = entry[1].path.substring(entry[1].path.lastIndexOf("/") + 1);
 
 					// Create new file
 					let myFile = new File();
@@ -228,7 +239,6 @@ let evaluateEntry = (entry) => {
 						return infoManager.update(storedInformation);
 
 					}).catch(err => {
-						console.log("Creating new Enty");
 						// Else create new Entry			
 						let info = new Information();
 						info.title = filename;
@@ -257,7 +267,7 @@ let evaluateEntry = (entry) => {
 			}
 		};
 
-		return infoManager.delete(filter);
+		prom = infoManager.delete(filter);
 	}
 	return prom;
 }
@@ -336,8 +346,6 @@ let delta = () => {
 		cursor: cursor,
 		path_prefix: path_prefix
 	});
-
-	console.log("Delta: " + cursor);
 
 	// An object of options to indicate where to post to
 	var post_options = {

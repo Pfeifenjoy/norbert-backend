@@ -81,10 +81,8 @@ let getInfoPath = () => {
 
 				infoPath = infPath;
 
-				let pathIDArray = pathID.split(":");
-
 				config.set("dropbox.informationPath", infoPath);
-				config.set("dropbox.informationPathID", pathIDArray[pathIDArray.length - 1]);
+				config.set("dropbox.informationPathID", pathID.substring(pathID.lastIndexOf(":") + 1));
 			})
 			.catch(error => {
 				console.log(error["error_description"]);
@@ -109,10 +107,8 @@ let getStoragePath = () => {
 
 				storagePath = storePath;
 
-				let pathIDArray = pathID.split(":");
-
 				config.set("dropbox.storagePath", storagePath);
-				config.set("dropbox.storagePathID", pathIDArray[pathIDArray.length - 1]);
+				config.set("dropbox.storagePathID", pathID.substring(pathID.lastIndexOf(":") + 1));
 			})
 			.catch(error => {
 				console.log(error["error_description"]);
