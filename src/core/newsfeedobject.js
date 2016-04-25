@@ -10,11 +10,14 @@ class NewsFeedObject {
         this._obj = dbObject;
         this._obj.title = this._obj.title || '';
         this._obj.components = this._obj.components || [];
+        this._obj.created_at = this._obj.created_at || Date.now();
+        this._components = loadComponents(this._obj.components);
         if (this._obj.dirty === undefined) {
             this._obj.dirty = true;
         }
-        this._obj.created_at = this._obj.created_at || Date.now();
-        this._components = loadComponents(this._obj.components);
+        if (this._obj.deleted === undefined) {
+            this._obj.deleted = false;
+        }
     }
 
     /**
@@ -69,6 +72,21 @@ class NewsFeedObject {
 
     set dirty(value) {
          this._obj.dirty = value;
+    }
+
+    /**
+     * Was it deleted by the user?
+     */
+    get deleted() {
+         return this._obj.deleted;
+    }
+
+    set deleted(value) {
+        this._obj.deleted = value;
+    }
+
+    delete() {
+         this._obj.deleted = true;
     }
 
     /**
