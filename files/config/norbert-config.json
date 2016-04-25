@@ -18,7 +18,8 @@
         "interval": 60000
     },
     "informationProviders": [
-        "./information-providers/demo.js"
+        "./information-providers/demo.js",
+		"./information-providers/icalender.js"
     ],
     "files": {
         "storageService": "./storage-services/demo.js",

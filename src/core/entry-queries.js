@@ -13,7 +13,7 @@ export function createEntry(entry) {
         });
 }
 
-export function getEntry(id) {
+function getEntry(id) {
     return this.db.collection("entries").findOne({_id: ObjectId(id)})
         .then(data => {
             return new Entry(data);
@@ -37,3 +37,11 @@ export function deleteEntry(entry){
     entry.deleted = true;
     return updateEntry(entry);
 }
+
+export default {
+    createEntry,
+    getEntry,
+    updateEntry,
+    deleteEntry
+}
+
