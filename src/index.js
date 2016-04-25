@@ -70,4 +70,3 @@ core.createCore()
 		process.exit(1);
 	});
 
-config.set('dropbox.token', '');
