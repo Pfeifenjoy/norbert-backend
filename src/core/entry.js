@@ -49,6 +49,11 @@ class Entry extends NewsFeedObject {
         let result = super.userRepresentation;
         result.tags = this.tags;
     }
+
+    set userRepresentation(obj) {
+        this.tags = obj.tags || [];
+        super.userRepresentation = obj;
+    }
 }
 
 module.exports.Entry = Entry;

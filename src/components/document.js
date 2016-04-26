@@ -39,6 +39,10 @@ class DocumentComponent extends Component {
             url: this.file.getUrl()
         };
     }
+
+    setDataUserRepresentation(obj) {
+        this.file.originalFileName = obj.name || '';
+    }
 }
 
 module.exports = {

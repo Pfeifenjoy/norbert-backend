@@ -10,21 +10,20 @@ import {Entry} from '../core/entry';
 let router = new Router;
 
 router.post("/", (req, res) => {
-    let {title} = req.body;
-    let owned_by = req.session.user.id;
+    // check the request
+    let userObject = req.body;
 
+    // create entry
+    let owned_by = req.session.user.id;
     let entry = new Entry();
-    entry.title = title || "";
-    entry.owned_by = owned_by;
-    entry.components = req.body.components || [];
-    entry.tags = req.body.tags || [];
-    entry.equality_group = new ObjectID();
+    entry.userRepresentation = userObject;
+
+    // store
     req.app.core.createEntry(entry).then(entry => {
-        res.json(entry)
-    })
-    .catch(() => {
+        res.status(201).send('created');
+    }).catch(() => {
         res.status(500).send("Could not create entry.")
-    })
+    });
 });
 
 
@@ -68,11 +67,5 @@ router.delete("/:entryId", (req,res) => {
         res.status(500).send('Could not delete entry.');
     })
 })
-
-
-
-
-
-
 
 export default router;

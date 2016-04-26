@@ -134,6 +134,11 @@ class Component {
             console.log('Fix your code and try again!');
             process.exit(1);
         }
+        if (typeof this.setDataUserRepresentation !== 'function') {
+            console.log('The function "setDataUserRepresentation" needs to be implemented for every component class.');
+            console.log('Fix your code and try again!');
+            process.exit(1);
+        }
     }
 
     /**
@@ -176,6 +181,10 @@ class Component {
         result['type'] = this.pluginName;
         result['data'] = this.getDataUserRepresentation();
         return result;
+    }
+
+    set userRepresentation(obj) {
+        if (obj.data)   this.setDataUserRepresentation(obj.data);
     }
 
 }

@@ -55,19 +55,24 @@ router.delete("/:userId", (req,res) => {
 
 
 router.post("/login", (req, res) => {
+    console.log(req.body);
     let {username, password} = req.body;  
+    if (username === undefined || password === undefined) {
+        res.status(400).send('Both username and password have to be provided.');
+        return;
+    }
     req.app.core.authUser(username, password)
-    .then(user => {
-        req.session.user = {
-            id      : user._id,
-            username: user.username
-        };
-        req.session.authenticated = true;
-        res.send('Succesfully authenticated user ' + username );
-    })
-    .catch(function(e){
-        console.log(e);
-        res.status(403).send('Authentication for user ' + username + ' failed');
+        .then(user => {
+            req.session.user = {
+                id      : user._id,
+                username: user.username
+            };
+            req.session.authenticated = true;
+            res.send('Succesfully authenticated user ' + username );
+        })
+        .catch(function(e){
+            console.log(e);
+            res.status(403).send('Authentication for user ' + username + ' failed');
         });
 });
 
@@ -78,11 +83,12 @@ router.post("/logout" ,(req,res) =>{
 })
 
 router.authenticate = (req, res, next) => {
-    console.log("authentication: " + req.session);
     if(req.session.authenticated) {
+        console.log('Authenticated ' + req.session.user.username);
         next();
     }
     else {
+        console.log('Authentication failed.');
         res.status(403).send('Could not authenticate');
     }
 };

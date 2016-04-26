@@ -32,6 +32,10 @@ class DescriptionComponent extends Component{
              text: this.text
          };
     }
+
+    setDataUserRepresentation(obj) {
+         this.text = obj.text || '';
+    }
 }
 
 module.exports = {
