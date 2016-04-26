@@ -48,6 +48,7 @@ class Entry extends NewsFeedObject {
     get userRepresentation() {
         let result = super.userRepresentation;
         result.tags = this.tags;
+        return result;
     }
 
     set userRepresentation(obj) {

@@ -9,7 +9,7 @@ export function createEntry(entry) {
     let data = entry.dbRepresentation;
     return this.db.collection("entries").insertOne(data)
         .then(cursor => {
-            return cursor.ops[0]
+            return new Entry(cursor.ops[0]);
         });
 }
 

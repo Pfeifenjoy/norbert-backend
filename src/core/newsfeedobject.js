@@ -130,6 +130,7 @@ class NewsFeedObject {
             title: this.title,
             components: components
         };
+        return result;
     }
 
     set userRepresentation(obj) {

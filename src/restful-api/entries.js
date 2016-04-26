@@ -20,7 +20,7 @@ router.post("/", (req, res) => {
 
     // store
     req.app.core.createEntry(entry).then(entry => {
-        res.status(201).send('created');
+        res.status(201).send(entry.userRepresentation);
     }).catch(() => {
         res.status(500).send("Could not create entry.")
     });
