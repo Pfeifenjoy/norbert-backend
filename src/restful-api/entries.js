@@ -17,6 +17,7 @@ router.post("/", (req, res) => {
     let owned_by = req.session.user.id;
     let entry = new Entry();
     entry.userRepresentation = userObject;
+    entry.owned_by = owned_by;
 
     // store
     req.app.core.createEntry(entry).then(entry => {
