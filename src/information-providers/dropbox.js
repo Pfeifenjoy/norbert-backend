@@ -267,7 +267,7 @@ let evaluateEntry = (entry) => {
 			}
 		};
 
-		prom = infoManager.delete(filter);
+		prom = infoManager.remove(filter);
 	}
 	return prom;
 }
