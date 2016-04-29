@@ -80,6 +80,17 @@ var extractText = function(entry) {
     });
 }
 
+function tokenize(text) {
+    let words = [];
+    let regWord = /[a-z]+/ig;
+    let match = regWord.exec(text);
+    while (match) {
+        words.push(match[0]);
+        match = regWord.exec(text);
+    }
+    return words;
+}
+
 
 function testMe() {
 
@@ -94,6 +105,7 @@ function testMe() {
             return extractText(info);
         }).then(text => {
             console.log('Text: ', text);
+            console.log('Tokens: ', tokenize(text));
         });
 }
 
