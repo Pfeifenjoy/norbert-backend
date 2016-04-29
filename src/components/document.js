@@ -17,8 +17,8 @@ class DocumentComponent extends Component {
     }
 
     getFiles() {
-        if (this._data.where == remote_file) {
-            return [this._data.file];
+        if (this.file.state === states.remote_file) {
+            return [this.file];
         } else {
             return [];
         }

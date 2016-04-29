@@ -6,6 +6,7 @@ import {
 } from 'child_process';
 import fs from 'fs';
 import config from '../utils/configuration.js';
+import https from 'https';
 
 
 const contentUrl = "content.dropboxapi.com";
@@ -169,10 +170,12 @@ let downloadFile = (fileID, localFilePath, token) => {
                     // Concat alle the raw chunks to a complete file
                     let fileData = Buffer.concat(data);
 
-                    fs.writeFile(localFilePath, fileData).then(() => {
-                        resolve();
-                    }).catch(err => {
-                        reject(err);
+                    fs.writeFile(localFilePath, fileData, (err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
                     });
 
                 } else {

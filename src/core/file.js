@@ -126,12 +126,14 @@ class File {
 
     /**
      * Set to a file that was already uploaded to 
-     * the Storage Service.
+     * the current(!) Storage Service.
      */
     setToRemoteFile(file, originalFileName = origFileNameDefault) {
-         this._obj.state = remote_file;
-         this._obj.location = file;
-         this._obj.originalFileName = originalFileName;
+        let [ssName, storageService] = getStorageService();
+        this._obj.state = remote_file;
+        this._obj.location = file;
+        this._obj.originalFileName = originalFileName;
+        this._obj.ss = ssName;
     }
 
     /**

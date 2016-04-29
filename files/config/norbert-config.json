@@ -38,5 +38,9 @@
         "informationPathID": "UKi922iFmBAAAAAAAAAAAw",
         "storagePath": "/norbert-upload",
         "storagePathID": "I6avx4OFbFAAAAAAAAAAAQ"
+    },
+    "commands": {
+         "pdftotext": "pdftotext",
+         "python3": "python"
     }
 }
