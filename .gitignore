@@ -109,4 +109,6 @@ fabric.properties
 #Build directory
 build/
 
-files/tmp
+files/tmp/*
+files/dropbox/*
+
