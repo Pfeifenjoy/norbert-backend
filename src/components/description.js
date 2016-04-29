@@ -1,4 +1,4 @@
-import {Component} from './../core/components';
+import {Component} from './../core/component';
 
 class DescriptionComponent extends Component{
 
@@ -25,6 +25,16 @@ class DescriptionComponent extends Component{
 
     getNotifications() {
          return [];
+    }
+
+    getDataUserRepresentation() {
+         return {
+             text: this.text
+         };
+    }
+
+    setDataUserRepresentation(obj) {
+         this.text = obj.text || '';
     }
 }
 

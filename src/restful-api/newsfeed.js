@@ -7,19 +7,14 @@ import assert from 'assert';
 const router = new Router();
 
 router.get('/', (req,res) =>{
-    var cursor = req.app.core.getNewsfeed(req.session.user.id);
-      var entries = [];
-      cursor.each(function(err,doc){
-      assert.equal(err,null);
-      if(doc != null){
-          //console.log(doc);
-          entries.push(doc);
-          //console.log(entries)
-          }else{
-        console.log(entries);
-        res.send(entries);
-        }   
-    });  
+    req.app.core.getNewsfeed(req.session.user.id)
+        .then(newsfeed => {
+            let newsfeedJson = newsfeed.map(entry => entry.userRepresentation);
+            res.status(200).send(newsfeedJson);
+        }).catch(err => {
+            res.status(500);
+            console.log(err);
+        });
 })
 
 module.exports = router;

@@ -6,26 +6,42 @@ import { ObjectId } from "mongodb";
 import { Entry } from "./entry";
 
 export function createEntry(entry) {
-    return this.db.collection("entries").insertOne(entry)
-    .then(cursor => {
-        return cursor.ops[0]
-    })
+    let data = entry.dbRepresentation;
+    return this.db.collection("entries").insertOne(data)
+        .then(cursor => {
+            return new Entry(cursor.ops[0]);
+        });
 }
 
-export function getEntry(id) {
+function getEntry(id) {
     return this.db.collection("entries").findOne({_id: ObjectId(id)})
+        .then(data => {
+            return new Entry(data);
+        });
 }
 
-export function updateEntry(id, entry) {
-    console.log(entry);
-    id = ObjectId(id);
+export function updateEntry(entry) {
+    entry.dirty = true;
+    let data = entry.dbRepresentation;
+    let id = entry.id;
     return this.db.collection("entries").findAndModify(
-        {_id: id}, [], {"$set": entry}, {"new": true})
-    .then(cursor => {
-        return cursor.value
-    })
+        {_id: id}, [], {"$set": data}, {"new": true}
+    ).then(cursor => {
+        let newData = cursor.value;
+        let newEntry = new Entry(newData);
+        return newEntry;
+    });
 }
 
-export function deleteEntry(entryID,userID){
-    return this.db.collection("entries").remove({_id : ObjectId(entryID), owned_by : userID});
+export function deleteEntry(entry){
+    entry.deleted = true;
+    return updateEntry(entry);
 }
+
+export default {
+    createEntry,
+    getEntry,
+    updateEntry,
+    deleteEntry
+}
+

@@ -3,7 +3,7 @@
  * @author: Tobias Dorra
  */
 
-import {NewsFeedObject} from './newsfeed-object';
+import {NewsFeedObject} from './newsfeedobject';
 
 /**
  * Represents an Information in the newsfeed.

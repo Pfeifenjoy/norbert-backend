@@ -19,11 +19,11 @@ var importInformation = function() {
 	var providers = loadPlugins(providerConfig);
 
 	// sync each information provider
-	for (var name of Object.keys(providers)) {
+	for (let name of Object.keys(providers)) {
 		let provider = providers[name];
 		sync = sync.then(() => {
             console.log('Started sync: ', name);
-			var dbAccess = new InfoManager(name, this.db);
+			let dbAccess = new InfoManager(name, this);
 			return provider.sync(dbAccess);
 		});
 	}
@@ -53,10 +53,10 @@ var enhanceFilter = function(filter, provider){
  */
 class InfoManager{
 
-    constructor(informationProviderName, database) {
+    constructor(informationProviderName, core) {
         this.provider = informationProviderName;
-        this.db = database;
-        this.information = this.db.collection('information');
+		this.core = core;
+        this.information = this.core.db.collection('information');
     }
 
 
@@ -82,7 +82,7 @@ class InfoManager{
      */
     remove(filter){
         var actualFilter = enhanceFilter(filter, this.provider);
-        return this.information.remove(actualFilter);
+		return this.information.remove(actualFilter);
     }
 
     /**

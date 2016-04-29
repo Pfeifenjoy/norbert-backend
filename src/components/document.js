@@ -2,8 +2,8 @@
  * @author: Tobias Dorra
  */
 
-import {Component} from './../core/components';
-import {File} from './../core/file';
+import {Component} from './../core/component';
+import {File, states} from './../core/file';
 
 class DocumentComponent extends Component {
 
@@ -24,12 +24,24 @@ class DocumentComponent extends Component {
         }
     }
 
+    getNotifications() {
+      return [];
+    }
+
     getDataDbRepresentation() {
         return this.file.dbRepresentation;
     }
 
-    getNotifications() {
-      return [];
+    getDataUserRepresentation() {
+        return {
+            processing: (this.file.state != states.remote_file),
+            name: this.file.originalFileName,
+            url: this.file.getUrl()
+        };
+    }
+
+    setDataUserRepresentation(obj) {
+        this.file.originalFileName = obj.name || '';
     }
 }
 

@@ -1,3 +1,4 @@
+
 /**
  * @author Arwed Mett,Simon Oswald
  */
@@ -9,47 +10,30 @@ import {Entry} from '../core/entry';
 let router = new Router;
 
 router.post("/", (req, res) => {
-    let {title} = req.body;
-    let owned_by = req.session.user.id;
-    let components, tags;
-    try {
-        components = JSON.parse(req.body.components);
-    } catch(e) {
-        components = [];
-    }
-    try {
-        tags = JSON.parse(req.body.tags);
-    } catch(e) {
-        tags = [];
-    }
-    let entry = new Entry();
+    // check the request
+    let userObject = req.body;
 
-    entry.title = title || "";
+    // create entry
+    let owned_by = req.session.user.id;
+    let entry = new Entry();
+    entry.userRepresentation = userObject;
     entry.owned_by = owned_by;
-    entry.components = components;
-    entry.tags = tags;
-    entry.equality_group = new ObjectID();
-    req.app.core.createEntry(entry.dbRepresentation).then(entry => {
-        res.json(entry)
-    })
-    .catch(() => {
+
+    // store
+    req.app.core.createEntry(entry).then(entry => {
+        res.status(201).send(entry.userRepresentation);
+    }).catch(() => {
         res.status(500).send("Could not create entry.")
-    })
-})
+    });
+});
 
 
 router.put("/:entryId", (req, res) => {
     let entry = {};
     let {title} = req.body;
     if(title) entry.title = title;
-    let components, tags;
-    try {
-        entry.components = JSON.parse(req.body.components);
-    } catch(e) {}
-    try {
-        entry.tags = JSON.parse(req.body.tags);
-    } catch(e) {}
-
+    entry.components = req.body.components || [];
+    entry.tags = req.body.tags || [];
     req.app.core.updateEntry(req.params.entryId, entry)
     .then(entry => {
         res.json(entry)
@@ -84,11 +68,5 @@ router.delete("/:entryId", (req,res) => {
         res.status(500).send('Could not delete entry.');
     })
 })
-
-
-
-
-
-
 
 export default router;
