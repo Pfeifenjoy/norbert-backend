@@ -113,3 +113,4 @@ build/
 files/tmp/*
 files/dropbox/*
 
+!keepme.txt

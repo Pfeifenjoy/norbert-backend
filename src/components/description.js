@@ -16,7 +16,7 @@ class DescriptionComponent extends Component{
     }
 
     getText() {
-        return this.description;
+        return this.text;
     }
 
     getFiles() {

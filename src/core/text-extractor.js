@@ -6,6 +6,11 @@ import {spawn} from 'child_process';
 import config  from '../utils/configuration';
 import {Information} from './information';
 
+/**
+ * Returns the text from a document. 
+ *
+ * file_name is a string containing a path to a *.pdf file.
+ */
 var getDocumentText = function (file_name) {
 
     var p = new Promise((resolve, reject) => {
@@ -25,6 +30,7 @@ var getDocumentText = function (file_name) {
                 console.log('Please install \'pdftotext\' to be able to search for pdf documents');
                 resolve('');
             } else {
+                // Wasn't *.pfd most likely.
                 resolve('');
             }
         });
@@ -33,9 +39,15 @@ var getDocumentText = function (file_name) {
     return p;
 }
 
+/**
+ * Returns all text from an entry or an information.
+ *
+ * The result is an array, consisting out of three elements.
+ * result[0] : Important text like headlines or tags.
+ * result[1] : Normal text.
+ * result[2] : Text that is only loosely related to the Entry or Information.
+ */
 var extractText = function(entry) {
-
-    console.log(entry);
 
     let title = entry.title || '';
     let tags = '';
@@ -49,7 +61,7 @@ var extractText = function(entry) {
     for (let component of entry.components) {
         let compText = component.getText();
         let compFiles = component.getFiles();
-        texts = texts + compText;
+        texts = texts + ' ' + compText;
         files = files.concat(compFiles);
     }
 
@@ -68,29 +80,16 @@ var extractText = function(entry) {
         return docText;
     });
 
-    return Promise.all(filesToText).then(texts => {
-        let docText = texts.join(' ');
+    return Promise.all(filesToText).then(docTexts => {
+        let docText = docTexts.join(' ');
 
-        // the result is weighted (hacky, I know)
-        let result = [title, title, title, title
-                    , tags , tags , tags , tags
-                    , texts, texts
-                    , docText].join(' ');
-        return result;
+        return [
+             title + ' ' + tags,
+             texts,
+             docText
+        ];
     });
 }
-
-function tokenize(text) {
-    let words = [];
-    let regWord = /[a-z]+/ig;
-    let match = regWord.exec(text);
-    while (match) {
-        words.push(match[0]);
-        match = regWord.exec(text);
-    }
-    return words;
-}
-
 
 function testMe() {
 
@@ -101,14 +100,11 @@ function testMe() {
         .then(data => {
             let rawInfo = data[1];
             let info = new Information(rawInfo);
-            //console.log('Info: ', data);
             return extractText(info);
         }).then(text => {
             console.log('Text: ', text);
-            console.log('Tokens: ', tokenize(text));
         });
 }
 
 module.exports.testMe = testMe;
-
 
