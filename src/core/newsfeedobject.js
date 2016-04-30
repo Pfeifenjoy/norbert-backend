@@ -116,6 +116,8 @@ class NewsFeedObject {
         let dbObj = Object.assign({}, this._obj);
         dbObj.components = components;
 
+        dbObj._id = new ObjectID(dbObj._id);
+
         // return
         return dbObj;
     }

@@ -8,7 +8,9 @@ function getNewsfeed(userID){
     let entryCursor = this.db.collection('entries').find(query);
     let dbResult = entryCursor.toArray();
     let result = dbResult.then(array => {
-        return array.map(e => new Entry(e));
+        return array
+        .filter(e => !e.deleted)
+        .map(e => new Entry(e));
     });
 
     return result;
