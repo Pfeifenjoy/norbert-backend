@@ -17,8 +17,8 @@ class DocumentComponent extends Component {
     }
 
     getFiles() {
-        if (this._data.where == remote_file) {
-            return [this._data.file];
+        if (this.file.state === states.remote_file) {
+            return [this.file];
         } else {
             return [];
         }
@@ -38,6 +38,10 @@ class DocumentComponent extends Component {
             name: this.file.originalFileName,
             url: this.file.getUrl()
         };
+    }
+
+    setDataUserRepresentation(obj) {
+        this.file.originalFileName = obj.name || '';
     }
 }
 

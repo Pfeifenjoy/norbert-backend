@@ -3,6 +3,7 @@
  */
 
 import {NewsFeedObject} from './newsfeedobject';
+import {ObjectID} from 'mongodb';
 
 /**
  * Represents an Entry in the newsfeed.
@@ -12,8 +13,10 @@ class Entry extends NewsFeedObject {
     constructor(dbObject = {}) {
         super(dbObject);
 
+        this._obj.owned_by = this._obj.owned_by || null;
         this._obj.tags = this._obj.tags || [];
         this._obj.hidden_for = this._obj.hidden_for || [];
+        this._obj.equality_group = this._obj.equality_group || ObjectID();
     }
     set owned_by(owned_by) {
         this._obj.owned_by = owned_by;
@@ -49,6 +52,13 @@ class Entry extends NewsFeedObject {
     get userRepresentation() {
         let result = super.userRepresentation;
         result.tags = this.tags;
+        result.type = "ENTRY";
+        return result;
+    }
+
+    set userRepresentation(obj) {
+        this.tags = obj.tags || [];
+        super.userRepresentation = obj;
     }
 }
 

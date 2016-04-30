@@ -1,6 +1,7 @@
 /**
  * @author: Simon Oswald
  */
+import {Entry} from './entry';
 
 import { Entry } from "./entry";
 import { ObjectId } from "mongodb";
@@ -11,9 +12,16 @@ function getNewsfeed(userID){
 }
 
 function deleteRecommendation(entryID,userID){
-	let entry = new Entry(this.db.collection("entries").findOne({_id: ObjectId(entryID)}));
-	entry.hideForUser(userID);
-	return this.updateEntry(entry);
+    let query = {owned_by : userID};
+    let entryCursor = this.db.collection('entries').find(query);
+    let dbResult = entryCursor.toArray();
+    let result = dbResult.then(array => {
+        return array
+        .filter(e => !e.deleted)
+        .map(e => new Entry(e));
+    });
+
+    return result;
 }
 
 function getReccomendations(userID){

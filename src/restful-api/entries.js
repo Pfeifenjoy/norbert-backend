@@ -10,21 +10,21 @@ import {Entry} from '../core/entry';
 let router = new Router;
 
 router.post("/", (req, res) => {
-    let {title} = req.body;
-    let owned_by = req.session.user.id;
+    // check the request
+    let userObject = req.body;
 
+    // create entry
+    let owned_by = req.session.user.id;
     let entry = new Entry();
-    entry.title = title || "";
+    entry.userRepresentation = userObject;
     entry.owned_by = owned_by;
-    entry.components = req.body.components || [];
-    entry.tags = req.body.tags || [];
-    entry.equality_group = new ObjectID();
+
+    // store
     req.app.core.createEntry(entry).then(entry => {
-        res.json(entry)
-    })
-    .catch(() => {
+        res.status(201).send(entry.userRepresentation);
+    }).catch(() => {
         res.status(500).send("Could not create entry.")
-    })
+    });
 });
 
 
@@ -59,7 +59,12 @@ router.get("/:entryId", (req,res) => {
 })
 
 router.delete("/:entryId", (req,res) => {
-    req.app.core.deleteEntry(req.params.entryId, req.session.user.id)
+    req.app.core.getEntry(req.params.entryId)
+    .then(entry => {
+        if(entry.owned_by = req.session.user.id) {
+            return req.app.core.deleteEntry(entry);
+        }
+    })
     .then(function(){
         res.send('Deleted Entry.');
     })
@@ -68,11 +73,5 @@ router.delete("/:entryId", (req,res) => {
         res.status(500).send('Could not delete entry.');
     })
 })
-
-
-
-
-
-
 
 export default router;

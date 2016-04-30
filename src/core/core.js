@@ -10,6 +10,8 @@ import infos_import from './information-import';
 import entries from './entry-queries';
 import newsfeed from './newsfeed-queries';
 import file from "./file";
+import file_upload from './file-upload';
+import text_extractor from './text-extractor';
 
 /**
  * Core:
@@ -28,6 +30,9 @@ Object.assign(Core.prototype, infos_import);
 Object.assign(Core.prototype, entries);
 Object.assign(Core.prototype, newsfeed);
 Object.assign(Core.prototype, file);
+Object.assign(Core.prototype, file_upload);
+Object.assign(Core.prototype, text_extractor);
+
 
 /**
  * createCore:

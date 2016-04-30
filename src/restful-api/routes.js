@@ -24,12 +24,16 @@ export function initialRoutes(core) {
         proxy: true,
         resave: true,
         saveUninitialized: true
-    }))
+    }));
+
+    // auth
+    var auth = users.authenticate;
+
     // add the routes
     router.use('/users', users);
-    router.use("/entries", entries);
-    router.use("/newsfeed", newsfeed);
-    router.use("/files", files)
+    router.use("/entries", auth, entries);
+    router.use("/newsfeed", auth, newsfeed);
+    router.use("/files", auth, files);
     
     return router;
 }

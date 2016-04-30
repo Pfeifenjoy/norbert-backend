@@ -2,7 +2,8 @@
  * Author: Tobias Dorra
  */
 
-import {loadComponents} from './component';
+import { createComponent, loadComponents } from './component';
+import { ObjectID }from 'mongodb';
 
 class NewsFeedObject {
 
@@ -115,6 +116,8 @@ class NewsFeedObject {
         let dbObj = Object.assign({}, this._obj);
         dbObj.components = components;
 
+        dbObj._id = new ObjectID(dbObj._id);
+
         // return
         return dbObj;
     }
@@ -129,6 +132,21 @@ class NewsFeedObject {
             title: this.title,
             components: components
         };
+        return result;
+    }
+
+    set userRepresentation(obj) {
+        if (obj.id)     this.id = ObjectID(obj.id);
+        if (obj.title)  this.title = obj.title;
+        if (obj.components) {
+            let actualComponents = obj.components.map(compObj => {
+                let type = compObj.type;
+                let component = createComponent(type);
+                component.userRepresentation = compObj;
+                return component;
+            });
+            this.components = actualComponents;
+        }
     }
 };
 
