@@ -52,6 +52,7 @@ class Entry extends NewsFeedObject {
     get userRepresentation() {
         let result = super.userRepresentation;
         result.tags = this.tags;
+        result.type = "ENTRY";
         return result;
     }
 

@@ -1,4 +1,4 @@
-This file stops git from removing this folder.
+This file stops git from removing the folder
 
 
              ,----------------,              ,---------,
@@ -19,3 +19,4 @@ This file stops git from removing this folder.
  / ==ooooooooooooooo==.o.  ooo= //   ,`\--{)B     ,"
 /_==__==========__==_ooo__ooo=_/'   /___________,"
 `-----------------------------'
+
