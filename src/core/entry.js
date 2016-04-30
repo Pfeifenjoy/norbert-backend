@@ -13,6 +13,7 @@ class Entry extends NewsFeedObject {
         super(dbObject);
 
         this._obj.tags = this._obj.tags || [];
+        this._obj.hidden_for = this._obj.hidden_for || [];
     }
     set owned_by(owned_by) {
         this._obj.owned_by = owned_by;
