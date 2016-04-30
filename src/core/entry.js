@@ -48,7 +48,7 @@ class Entry extends NewsFeedObject {
         this._obj.tags.concat(tags);
     }
     hideForUser(userId) {
-        this._obj.hidden_for.concat(userId);
+        this._obj.hidden_for = this._obj.hidden_for.concat(userId);
     }
     get userRepresentation() {
         let result = super.userRepresentation;

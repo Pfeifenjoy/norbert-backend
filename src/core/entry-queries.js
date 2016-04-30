@@ -24,6 +24,7 @@ export function updateEntry(entry) {
     entry.dirty = true;
     let data = entry.dbRepresentation;
     let id = entry.id;
+    delete data._id;
     return this.db.collection("entries").findAndModify(
         {_id: id}, [], {"$set": data}, {"new": true}
     ).then(cursor => {
