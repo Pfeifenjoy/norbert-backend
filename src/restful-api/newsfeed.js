@@ -21,7 +21,7 @@ router.delete('/recommendation/:id', (req,res) => {
   let entryID = req.params.id;
   req.app.core.deleteRecommendation(entryID,req.session.user.id)
   .then(() =>{
-    res.send("Kappa");
+    res.send("Succesfully deleted");
   })
   .catch((e) => {
     console.log(e);
