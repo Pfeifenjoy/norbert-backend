@@ -43,6 +43,7 @@ class Entry extends NewsFeedObject {
     get equality_group(){
         return this._obj.equality_group;
     }
+
     addTags(tags) {
         this._obj.tags.concat(tags);
     }

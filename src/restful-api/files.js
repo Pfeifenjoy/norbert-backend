@@ -34,6 +34,7 @@ router.post("/", (req, res) => {
         if(componentId && entryId) {
             req.app.core.getEntry(entryId)
             .then(entry => {
+                if(entry.owned_by !== req.session.user.id) throw Error("Unauthorized");
                 let { userRepresentation } = entry;
                 delete userRepresentation.id;
                 let documentComponent = userRepresentation.components[componentId];

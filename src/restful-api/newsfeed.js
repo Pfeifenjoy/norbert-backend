@@ -1,5 +1,5 @@
 /**
- * @author Simon Oswald
+ * @author Simon Oswald, Arwed Mett
  */
 import { Router } from 'express';
 import assert from 'assert';
@@ -7,52 +7,15 @@ import assert from 'assert';
 const router = new Router();
 
 router.get('/', (req,res) =>{
-    //console.log(req.app.core.getNewsfeed(req.session.user.id));
     req.app.core.getNewsfeed(req.session.user.id)
-      .then(newsfeed => {
-        let merged = splitNmerge(newsfeed);
-        let newsfeedJson = merged.map(newsfeedObject => newsfeedObject.userRepresentation);
-        res.status(200).send(newsfeedJson)
-        /*sortNewsfeed(merged)
-        .then(sorted_newsfeed => {
-          res.send(sorted_newsfeed);
-        })*/
-      })
-        /*.then(newsfeed => {
-            let newsfeedJson = newsfeed.map(newsfeedObject => newsfeedObject.userRepresentation);
-            res.status(200).send(newsfeedJson);
-        })*/.catch(err => {
-            res.status(500);
-            console.log(err);
-        });
-        //let newsfeedJson = newsfeed.map(newsfeedObject =>  newsfeedObject.userRepresentation);
-        //res.status(200).send(newsfeed);
-})
-
-function splitNmerge([a,b]){
-  return a.concat(b);
-}
-
-function sortNewsfeed(newsfeed){
-  console.log(1);
-   return new Promise(function (fulfill,reject){
-    let sortedŃewsfeed = newsfeed.sort(compare);
-    console.log(2);
-      resolve(sortedŃewsfeed);
+    .then(newsfeed => {
+        res.json(newsfeed)
     })
-}
-
-function compare(a,b){
-  let relevA = Math.abs(a.created_at - Date.now());
-  let relevB = Math.abs(b.created_at - Date.now());
-  console.log(relevA, relveB);
-  if(relevA > relevB) 
-    return -1;
-  else if(relevA < relevB) 
-    return 1;
-  else 
-    return 0;
-}
+    .catch(err => {
+        console.log(err);
+        res.status(500).send("could not generate newsfeed.");
+    });
+})
 
 router.delete('/recommendation/:id', (req,res) => {
   let entryID = req.params.id;
@@ -65,7 +28,7 @@ router.delete('/recommendation/:id', (req,res) => {
   })
 })
 
-router.get('/reccomendation' , (req,res) => {
+router.get('/recomendation' , (req,res) => {
   var cursor = req.app.core.getReccomendations(req.session.user.id)
   var recommendations = [];
   cursor.each(function(err,doc){
