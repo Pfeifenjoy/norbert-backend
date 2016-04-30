@@ -1,14 +1,28 @@
 /**
- * @author: Simon Oswald
+ * @author: Simon Oswald, Arwed Mett
  */
 
 import { Entry } from "./entry";
 import { ObjectId } from "mongodb";
 
+function getRelevance(newsfeedObject) {
+    return [newsfeedObject.createdAt]
+    .concat(newsfeedObject.components
+     .filter(c => { return c && c.type === "components-notification" })
+     .map(c => c.data.date)
+    )
+    .map(time => Math.abs(Date.now() - time))
+    .reduce((a, b) => Math.min(a, b))
+}
+
 function getNewsfeed(userID){
 	let promises = [this.getEntries(userID), this.getInformation(userID)];
-	return Promise.all(promises);
-   	
+    return Promise.all(promises)
+    .then(([a, b]) => a.concat(b))
+    .then(newsfeedObjects => newsfeedObjects.sort((a, b) => {
+        return getRelevance(a) - getRelevance(b);
+    }))
+    .then(objects => objects.map(object => object.userRepresentation))
 }
 
 
