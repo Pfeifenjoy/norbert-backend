@@ -111,5 +111,5 @@ fabric.properties
 build/
 
 files/tmp/*
-files/dropbox/*
+files/dropbox/cursor.txt
 

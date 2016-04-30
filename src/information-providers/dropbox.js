@@ -73,10 +73,6 @@ var sync = function(infManager) {
 	}).catch(err => {
 		console.log(err);
 	});
-
-	//return infoManager.insert({
-	//	"title": "Hallo Welt!"
-	//});
 }
 
 module.exports = {
@@ -208,7 +204,6 @@ let evaluateEntry = (entry) => {
 						"id": id,
 						"rev": entry[1].rev,
 						"path": entry[1].path,
-						"mime_type": entry[1]["mime_type"]
 					}
 
 					// Extract filename
