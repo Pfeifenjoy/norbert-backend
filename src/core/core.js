@@ -12,6 +12,8 @@ import newsfeed from './newsfeed-queries';
 import file from "./file";
 import file_upload from './file-upload';
 import text_extractor from './text-extractor';
+import textp_words from './text-processing-words';
+import textp_tfidf from './text-processing-tfidf';
 import notifications from './notification-queries';
 
 /**
@@ -33,6 +35,8 @@ Object.assign(Core.prototype, newsfeed);
 Object.assign(Core.prototype, file);
 Object.assign(Core.prototype, file_upload);
 Object.assign(Core.prototype, text_extractor);
+Object.assign(Core.prototype, textp_words);
+Object.assign(Core.prototype, textp_tfidf);
 Object.assign(Core.prototype, notifications);
 
 
