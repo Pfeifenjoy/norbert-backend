@@ -7,9 +7,13 @@ import {
 import fs from 'fs';
 import config from '../utils/configuration.js';
 import https from 'https';
+import querystring from 'querystring';
 
 
 const contentUrl = "content.dropboxapi.com";
+
+let MAX_BYTES_PER_UPLOAD = 150 * 1024 * 1024; // 150 MB
+let CHUNK_SIZE = 1 * 1024 * 1024; // 1MB
 
 /**
  * Uploads a file to the storage provider.
@@ -36,29 +40,47 @@ const contentUrl = "content.dropboxapi.com";
  */
 function upload(localFile, originalFileName) {
 
-    // "upload" needs to return a promise.
+    // Get token from config
+    let token = config.get("dropbox.oAuthToken");
+
+    if (token === undefined) {
+        throw "There is an error in the config file: Setting dropbox.oAuthToken is required!";
+    }
+
+    // Get uploadFolder from config
+    let uploadFolder = config.get("dropbox.storagePath");
+
+    if (uploadFolder === undefined) {
+        throw "There is an error in the config file: Setting dropbox.storagePath is required!";
+    }
+
     return new Promise((resolve, reject) => {
 
-        // fake-upload the file
-        // (we completely ignore the parameter 'originalFileName' here.)
-        let remoteFileName = './files/' + Date.now().toString();
-        let remoteFile = {
-            "path": remoteFileName
-        };
+        uploadFile(originalFileName, localFile, token, uploadFolder).then(dropboxObject => {
 
-        let process = spawn('cp', [localFile, remoteFileName]);
+            // Extract id
+            let id = dropboxObject["id"].substring(dropboxObject["id"].lastIndexOf(":") + 1);
 
-        // when finished resolve with the "uploaded" location.
-        process.on('close', (code) => {
-            if (code == 0) {
-                resolve(remoteFile);
-            } else {
-                reject(code);
+            // Object with some important information
+            let fileObject = {
+                "id": id,
+                "rev": dropboxObject.rev,
+                "path": dropboxObject.path,
             }
+
+            // Extract filename
+            let filename = dropboxObject.path.substring(dropboxObject.path.lastIndexOf("/") + 1);
+
+            // Create new file
+            let myFile = new File();
+            // set location of the file
+            myFile.setToRemoteFile(fileObject, filename);
+
+            resolve(myFile);
+        }).catch(err => {
+            recject(err);
         });
-
     });
-
 }
 
 /**
@@ -78,6 +100,10 @@ function download(remoteFile, localFile) {
 
     // Get token from config
     let token = config.get("dropbox.oAuthToken");
+
+    if (token === undefined) {
+        throw "There is an error in the config file: Setting dropbox.oAuthToken is required!";
+    }
 
     // Concat id with the dropbox "id" prefix
     let fileID = "id:" + remoteFile.id;
@@ -117,6 +143,28 @@ module.exports = {
         'getUrl': getUrl
     }
 };
+
+/* uploadFile
+ *
+ * needs: [fileName]: name of the file with extension
+ *        [filePath]: local path to the file
+ *        [token]: oAuth token
+ *        [uploadFolder]: path where the service can store the file
+ * returns [fileObject] from dropbox
+ */
+
+let uploadFile = (fileName, filePath, token, uploadFolder) => {
+
+    let stats = fs.statSync(filePath);
+    let fileSizeInBytes = stats["size"];
+
+    // Check if file size is geater then 150MB
+    if (fileSizeInBytes <= MAX_BYTES_PER_UPLOAD) {
+        return singleRequestUpload(fileName, filePath, token, uploadFolder);
+    } else {
+        return multiRequestUpload(fileName, filePath, fileSizeInBytes, token, uploadFolder);
+    }
+}
 
 
 
@@ -167,9 +215,10 @@ let downloadFile = (fileID, localFilePath, token) => {
                     // Get response Header
                     let responseDropboxApi = JSON.parse(res.headers["dropbox-api-result"]);
 
-                    // Concat alle the raw chunks to a complete file
+                    // Concat all the raw chunks to a complete file
                     let fileData = Buffer.concat(data);
 
+                    // Save the file to local path
                     fs.writeFile(localFilePath, fileData, (err) => {
                         if (err) {
                             reject(err);
@@ -191,5 +240,465 @@ let downloadFile = (fileID, localFilePath, token) => {
 
         // Fire the http request
         req.end();
+    });
+}
+
+/* singleRequestUpload => use this for files < 150 MB
+ * needs: [fileName]: name of the file with extension
+ *        [filePath]: local path to the file
+ *        [token]: oAuth token
+ *        [uploadFolder]: path where the service can store the file
+ * returns: [fileObject]: from dropbox if response is OK
+ */
+let singleRequestUpload = (fileName, filePath, token, uploadFolder) => {
+
+    const pathUrl = "/2/files/upload";
+
+    // HTTP-Header
+    let headerOptions = JSON.stringify({
+        "path": uploadFolder + "/" + fileName,
+        "mode": "add",
+        "autorename": true,
+        "mute": true
+    });
+
+    // An object of options to indicate where to post to
+    let post_options = {
+        host: contentUrl,
+        path: pathUrl,
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/octet-stream',
+            'Dropbox-API-Arg': headerOptions
+        }
+    };
+
+    return new Promise((resolve, reject) => {
+        // Set up the request
+        let req = https.request(post_options, (res) => {
+
+            var data = "";
+            res.on('data', (chunk) => {
+                // Add the data chunks
+                data += chunk;
+            });
+
+            res.on('end', () => {
+                if (res.statusCode == 200) {
+                    resolve(JSON.parse(data));
+                } else {
+                    reject("Dropbox: Upload error:" + JSON.parse(data));
+                }
+
+            });
+
+        });
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        // Buffers the actual chunk of the file
+        let buffer = new Buffer(CHUNK_SIZE);
+
+        fs.open(filePath, 'r', function(err, fd) {
+            if (err) throw err;
+
+            function readNextChunk() {
+                fs.read(fd, buffer, 0, CHUNK_SIZE, null, function(err, bytesRead) {
+
+                    if (err) throw err;
+
+                    if (bytesRead === 0) {
+                        // done reading file
+                        req.end();
+
+                        fs.close(fd, function(err) {
+                            if (err) throw err;
+                        });
+                        return;
+                    }
+
+                    var data;
+                    if (bytesRead < CHUNK_SIZE) {
+                        // slice buffer if there is less data to upload then chunk size
+                        data = buffer.slice(0, bytesRead);
+                    } else {
+                        // upload the whole buffer
+                        data = buffer;
+                    }
+
+                    // Upload the data
+                    req.write(data, () => {
+                        readNextChunk();
+                    });
+
+
+                });
+            }
+
+            // Start upload
+            readNextChunk();
+        });
+    });
+}
+
+/* multiRequestUpload => use this for files > 150 MB
+ * needs: [fileName]: name of the file with extension
+ *        [filePath]: local path to the file
+ *        [token]: oAuth token
+ *        [uploadFolder]: path where the service can store the file
+ * returns: [fileObject]: from dropbox if response is OK
+ */
+let multiRequestUpload = (fileName, filePath, fileSizeInBytes, token, uploadFolder) => {
+
+    // Start uploading the large file
+    return multiRequestUploadStart(fileName, filePath, token).then(data => {
+
+        let session_id = data.id;
+        let readedBytes = data.readedBytes;
+
+        // local function
+        function uploadMore() {
+            // append chunks to the uploaded chunks
+            return multiRequestUploadAppend(fileName, filePath, token, readedBytes, session_id).then(data => {
+                readedBytes = data;
+                // Upload all other bytes from the file until the last chunk is smaller then 150 MB
+                if (fileSizeInBytes - readedBytes > MAX_BYTES_PER_UPLOAD) return uploadMore();
+                else {
+                    // Finish the upload
+                    return multiRequestUploadFinish(fileName, filePath, token, uploadFolder, readedBytes, session_id);
+                }
+            });
+        }
+
+        // Upload all other bytes from the file until the last chunk is smaller then 150 MB
+        if (fileSizeInBytes - readedBytes > MAX_BYTES_PER_UPLOAD) return uploadMore();
+
+        else {
+            // Finish the upload
+            return multiRequestUploadFinish(fileName, filePath, token, uploadFolder, readedBytes, session_id);
+        }
+    });
+}
+
+
+/* multiRequestUploadStart
+ *
+ * needs: [fileName]: name of the file with file extension
+ *        [filePath]: local path to the file
+ *        [token]: OAuth access token
+ * returns [id]: for further uploads 
+ *         [readedBytes]: uploaded bytes;
+ *         in an json object if response is OK
+ */
+let multiRequestUploadStart = (fileName, filePath, token) => {
+
+    const pathUrl = "/2/files/upload_session/start";
+
+    var readedBytes = 0;
+
+    // HTTP-Header
+    var headerOptions = JSON.stringify({
+        "close": false
+    });
+
+    // An object of options to indicate where to post to
+    var post_options_start = {
+        host: contentUrl,
+        path: pathUrl,
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/octet-stream',
+            'Dropbox-API-Arg': headerOptions
+        }
+    };
+
+    return new Promise((resolve, reject) => {
+        // Set up the request
+        let req = https.request(post_options_start, (res) => {
+
+            let data = "";
+            res.on('data', (chunk) => {
+                // Add the data chunks
+                data += chunk;
+            });
+
+            res.on('end', () => {
+                if (res.statusCode === 200) {
+                    let response = JSON.parse(data);
+                    resolve({
+                        id: response["session_id"],
+                        readedBytes: readedBytes
+                    });
+                } else {
+                    reject("Dropbox: Upload error: " + response);
+                }
+            });
+        });
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        // Buffers the actual chunk of the file
+        let buffer = new Buffer(CHUNK_SIZE);
+
+        // Open file
+        fs.open(filePath, 'r', function(err, fd) {
+            // throw error is something bad happens...
+            if (err) throw err;
+
+            // local function
+            function readNextChunk() {
+                fs.read(fd, buffer, 0, CHUNK_SIZE, readedBytes, function(err, bytesRead) {
+                    if (err) throw err;
+
+                    // check if there is more data to upload
+                    if (bytesRead === 0 || readedBytes + CHUNK_SIZE > MAX_BYTES_PER_UPLOAD) { // 150MB
+                        // done reading
+                        req.end();
+
+                        fs.close(fd, function(err) {
+                            if (err) throw err;
+                        });
+                        return;
+                    }
+                    // update readedBytes
+                    readedBytes += bytesRead;
+
+                    var data;
+                    if (bytesRead < CHUNK_SIZE) {
+                        // slice buffer if there is less data to upload then chunk size
+                        data = buffer.slice(0, bytesRead);
+                    } else {
+                        // upload the whole buffer
+                        data = buffer;
+                    }
+
+                    // upload the buffer
+                    req.write(data, () => {
+                        // read next chunk and upload it
+                        readNextChunk();
+                    });
+                });
+            }
+            // Start upload!
+            readNextChunk();
+        });
+    });
+
+}
+
+/* multiRequestUploadAppend
+ * needs: [fileName]: name of the file with file extension
+ *        [filePath]: local path to the file
+ *        [token]: OAuth access token
+ *        [readedBytes]: so far uploaded bytes
+ *        [session_id]: actual upload session id
+ * returns [readedBytes]: uploaded bytes;
+ */
+let multiRequestUploadAppend = (fileName, filePath, token, readedBytes, session_id) => {
+
+    const pathUrl = "/2/files/upload_session/append_v2";
+
+    // HTTP-Header Options
+    let headerOptions = JSON.stringify({
+        "cursor": {
+            "session_id": session_id,
+            "offset": readedBytes
+        },
+        "close": false
+    });
+
+    // An object of options to indicate where to post to
+    var post_options_start = {
+        host: contentUrl,
+        path: pathUrl,
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/octet-stream',
+            'Dropbox-API-Arg': headerOptions
+        }
+    };
+
+    return new Promise((resolve, reject) => {
+        // Set up the request
+        var req = https.request(post_options_start, (res) => {
+
+            var data = "";
+            res.on('data', (chunk) => {
+                // Add the data chunks
+                data += chunk;
+            });
+
+            res.on('end', () => {
+                if (res.statusCode === 200)
+                    resolve(readedBytes);
+                else reject(JSON.parse(data));
+            });
+
+        });
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        // local counter for the uploaded bytes
+        let uploadedBytes = 0;
+
+        // Buffers the actual chunk of the file
+        let buffer = new Buffer(CHUNK_SIZE);
+
+        fs.open(filePath, 'r', function(err, fd) {
+            if (err) throw err;
+
+            function readNextChunk() {
+                fs.read(fd, buffer, 0, CHUNK_SIZE, readedBytes, function(err, bytesRead) {
+                    if (err) throw err;
+
+                    if (bytesRead === 0 || uploadedBytes + CHUNK_SIZE > MAX_BYTES_PER_UPLOAD) { // 150MB
+                        // done reading
+                        req.end();
+
+                        fs.close(fd, function(err) {
+                            if (err) throw err;
+                        });
+                        return;
+                    }
+
+                    // Update counters
+                    readedBytes += bytesRead;
+                    uploadedBytes += bytesRead;
+
+                    var data;
+                    if (bytesRead < CHUNK_SIZE) {
+                        // slice buffer if there is less data to upload then chunk size
+                        data = buffer.slice(0, bytesRead);
+                    } else {
+                        // upload the whole buffer
+                        data = buffer;
+                    }
+
+                    req.write(data, () => {
+                        // Uplode more...
+                        readNextChunk();
+                    });
+
+
+                });
+            }
+            // Start upload
+            readNextChunk();
+        });
+    });
+}
+
+/* multiRequestUploadFinish
+ * needs: [fileName]: name of the file with file extension
+ *        [filePath]: local path to the file
+ *        [token]: OAuth access token
+ *        [uploadFolder]: folder where the uploaded file will be stored
+ *        [readedBytes]: so far uploaded bytes
+ *        [session_id]: actual upload session id
+ * returns [fileObject]: from dropbox
+ */
+let multiRequestUploadFinish = (fileName, filePath, token, uploadFolder, readedBytes, session_id) => {
+
+    const pathUrl = "/2/files/upload_session/finish";
+
+    // HTTP-Header
+    var headerOptions = JSON.stringify({
+        "cursor": {
+            "session_id": session_id,
+            "offset": readedBytes
+        },
+        "commit": {
+            "path": uploadFolder + "/" + fileName,
+            "mode": "add",
+            "autorename": true,
+            "mute": true
+        }
+    });
+
+    // An object of options to indicate where to post to
+    var post_options_start = {
+        host: this.contentUrl,
+        path: pathUrl,
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/octet-stream',
+            'Dropbox-API-Arg': headerOptions
+        }
+    };
+
+
+    return new Promise((resolve, reject) => {
+        // Set up the request
+        let req = https.request(post_options_start, (res) => {
+
+            var data = "";
+            res.on('data', (chunk) => {
+                // Add the data chunks
+                data += chunk;
+            });
+
+            res.on('end', () => {
+                if (res.statusCode == 200)
+                    resolve(JSON.parse(data));
+                else reject(JSON.parse(data));
+            });
+
+        });
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        // Buffers the actual chunk of the file
+        let buffer = new Buffer(CHUNK_SIZE);
+
+        fs.open(filePath, 'r', function(err, fd) {
+            if (err) throw err;
+
+            function readNextChunk() {
+                fs.read(fd, buffer, 0, CHUNK_SIZE, readedBytes, function(err, bytesRead) {
+                    if (err) throw err;
+
+                    if (bytesRead === 0) {
+                        // done reading
+                        console.log("Uploaded last 150MB");
+                        req.end();
+
+                        fs.close(fd, function(err) {
+                            if (err) throw err;
+                        });
+                        return;
+                    }
+
+                    var data;
+                    if (bytesRead < CHUNK_SIZE) {
+                        // slice buffer if there is less data to upload then chunk size
+                        data = buffer.slice(0, bytesRead);
+                    } else {
+                        // upload the whole buffer
+                        data = buffer;
+                    }
+
+                    req.write(data, () => {
+                        // Uplode more...
+                        readNextChunk();
+                    });
+
+
+                });
+            }
+            // Start upload...
+            readNextChunk();
+        });
     });
 }

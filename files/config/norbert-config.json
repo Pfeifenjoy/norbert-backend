@@ -19,7 +19,7 @@
     },
     "informationProviders": [
         "./information-providers/demo.js",
-		"./information-providers/icalender.js",
+        "./information-providers/icalender.js",
         "./information-providers/dropbox.js"
     ],
     "files": {
@@ -33,14 +33,14 @@
     ],
     "dropbox": {
         "uid": "558779514",
-        "oAuthToken": "TnEik6UKpfAAAAAAAAAADUMl1EmLQWykmW0fYfLI86Ja-jZHtc8URaU8ZKJVdVcB",
+        "oAuthToken": "TnEik6UKpfAAAAAAAAAA9B10t62tO_uOKjwNM1iAHbxPZaolPdpwQDbLkOt572vk",
         "informationPath": "/test",
-        "informationPathID": "UKi922iFmBAAAAAAAAAAAw",
+        "informationPathID": "GhgP85SYCvAAAAAAAAAAAQ",
         "storagePath": "/norbert-upload",
         "storagePathID": "I6avx4OFbFAAAAAAAAAAAQ"
     },
     "commands": {
-         "pdftotext": "pdftotext",
-         "python3": "python"
+        "pdftotext": "pdftotext",
+        "python3": "python"
     }
 }

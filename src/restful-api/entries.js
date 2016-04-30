@@ -30,14 +30,20 @@ router.post("/", (req, res) => {
 
 
 router.put("/:entryId", (req, res) => {
-    let entry = {};
-    let {title} = req.body;
-    if(title) entry.title = title;
-    entry.components = req.body.components || [];
-    entry.tags = req.body.tags || [];
-    req.app.core.updateEntry(req.params.entryId, entry)
+    req.app.core.getEntry(req.params.entryId)
     .then(entry => {
-        res.json(entry)
+        if(entry.owned_by = req.session.user.id) {
+            let {title, tags, components} = req.body;
+            entry.userRepresentation = {
+                title: title || entry.title,
+                tags: tags || entry.tags,
+                components: components || entry.components
+            }
+            return req.app.core.updateEntry(entry);
+        }
+    })
+    .then(entry => {
+        res.json(entry.userRepresentation)
     })
     .catch(e => {
         console.error(e);
