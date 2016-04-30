@@ -30,9 +30,11 @@ let reset = false;
 
 let infoManager;
 
+// Gets called from the core
 var sync = function(infManager) {
 	console.log(" - Dropbox Crawler -");
 
+	// Save infoManager gloabal in the package scope
 	infoManager = infManager;
 
 	// Get needed data from config	
