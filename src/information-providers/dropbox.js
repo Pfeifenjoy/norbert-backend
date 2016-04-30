@@ -7,13 +7,13 @@ import {
 } from 'mongodb';
 import {
 	createComponent
-} from './../core/components';
+} from './../core/component';
 import {
 	Information
 } from './../core/information';
 import {
 	File
-} from './../core/files';
+} from './../core/file';
 
 var https = require('https');
 var querystring = require('querystring');
@@ -267,7 +267,7 @@ let evaluateEntry = (entry) => {
 			}
 		};
 
-		prom = infoManager.delete(filter);
+		prom = infoManager.remove(filter);
 	}
 	return prom;
 }

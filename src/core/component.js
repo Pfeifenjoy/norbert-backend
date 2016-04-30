@@ -16,9 +16,9 @@ var getComponentPlugins = function(){
 
 var checkComponent = function(component) {
     if (!(component instanceof Component)) {
-         console.log("All component classes must derive from 'Component'.");
-         console.log("Go and fix your code, then try again!");
-         throw "Confused programmer.";
+        console.log("All component classes must derive from 'Component'.");
+        console.log("Go and fix your code, then try again!");
+        throw "Confused programmer.";
     }
 }
 

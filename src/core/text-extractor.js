@@ -2,13 +2,16 @@
  * @author: Tobias Dorra
  */
 
-import {spawn} from 'child_process'
+import {spawn} from 'child_process';
+import config  from '../utils/configuration';
+import {Information} from './information';
 
 var getDocumentText = function (file_name) {
 
     var p = new Promise((resolve, reject) => {
         let text = '';
-        let process = spawn('pdftotext', [file_name, '-']);
+        let command = config.get('commands.pdftotext');
+        let process = spawn(command, [file_name, '-']);
         
         process.stdout.on('data', (data) => {
             text = text + data;
@@ -20,9 +23,9 @@ var getDocumentText = function (file_name) {
             } else if (code == 127) {
                 console.log('Could not extract text from a document.');
                 console.log('Please install \'pdftotext\' to be able to search for pdf documents');
-                reject(code);
+                resolve('');
             } else {
-                reject(code);
+                resolve('');
             }
         });
    
@@ -31,20 +34,19 @@ var getDocumentText = function (file_name) {
 }
 
 var extractText = function(entry) {
-    let result = {
-        '0': '',    // titel & tags
-        '1': '',    // inline text
-        '2': ''     // text from documents
-    };
 
-    
+    console.log(entry);
+
     let title = entry.title || '';
-    // TODO: Tags
+    let tags = '';
+    if (entry.tags) {
+        tags = entry.tags.join(' ');
+    }
 
     let texts = '';
     let files = [];
 
-    for (component of entry.components) {
+    for (let component of entry.components) {
         let compText = component.getText();
         let compFiles = component.getFiles();
         texts = texts + compText;
@@ -57,17 +59,56 @@ var extractText = function(entry) {
             .then(obj => {
                 return getDocumentText(obj.filename);
             });
-        let cleanup = Promise.all([tmpFile, after(docText)])
+        let cleanup = Promise.all([tmpFile, docText])
             .then(values => {
                 let [obj, text] = values;
                 obj.unlink();
                 return text;
             });
-        return cleanup;
+        return docText;
     });
 
+    return Promise.all(filesToText).then(texts => {
+        let docText = texts.join(' ');
 
-
-
+        // the result is weighted (hacky, I know)
+        let result = [title, title, title, title
+                    , tags , tags , tags , tags
+                    , texts, texts
+                    , docText].join(' ');
+        return result;
+    });
 }
+
+function tokenize(text) {
+    let words = [];
+    let regWord = /[a-z]+/ig;
+    let match = regWord.exec(text);
+    while (match) {
+        words.push(match[0]);
+        match = regWord.exec(text);
+    }
+    return words;
+}
+
+
+function testMe() {
+
+    return this.db.collection('information')
+        .find({})
+        .limit(10)
+        .toArray()
+        .then(data => {
+            let rawInfo = data[1];
+            let info = new Information(rawInfo);
+            //console.log('Info: ', data);
+            return extractText(info);
+        }).then(text => {
+            console.log('Text: ', text);
+            console.log('Tokens: ', tokenize(text));
+        });
+}
+
+module.exports.testMe = testMe;
+
 

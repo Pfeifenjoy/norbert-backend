@@ -14,9 +14,13 @@ core.createCore()
 		core.importInformation()
 			.then(function(){
 				console.log("Imported  Information");
+			}).then(function(){
+                console.log("Extracting text");
+                return core.testMe();
+            }).then(function(){
+                console.log("Extracted text");
 				process.exit(0);
-			})
-			.catch(function(err){
+            }).catch(function(err){
 				console.log("Fail.");
 				console.log(err);
 				process.exit(1);
