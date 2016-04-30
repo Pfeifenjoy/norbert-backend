@@ -29,10 +29,6 @@ function deleteFile(filename) {
     })
 }
 
-function createTmpFileStream() {
-    return fs.createWriteStream(buildTempFileName());
-}
-
 let tmpFileCounter = 0;
 function buildTempFileName(extension = 'tmp') {
     // build a unique identifier
@@ -102,6 +98,10 @@ class File {
      */
     get state() {
         return this._obj.state;
+    }
+
+    set state(state) {
+        this._obj.state = state;
     }
 
     /**
@@ -222,15 +222,27 @@ class File {
         return storageService.getUrl(this._obj.location);
     }
 
+    get stream() {
+        return fs.createWriteStream(this._obj.location);
+    }
+
+}
+
+class UniqueFile extends File {
+    constructor() {
+        super({
+            location: buildTempFileName()
+        });
+    }
 }
 
 module.exports = {
     File,
+    UniqueFile,
     states: {
         no_file: no_file,
         local_file: local_file,
         remote_file: remote_file
-    },
-    createTmpFileStream
+    }
 }
 
