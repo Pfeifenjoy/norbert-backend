@@ -30,9 +30,11 @@ let reset = false;
 
 let infoManager;
 
+// Gets called from the core
 var sync = function(infManager) {
 	console.log(" - Dropbox Crawler -");
 
+	// Save infoManager gloabal in the package scope
 	infoManager = infManager;
 
 	// Get needed data from config	
@@ -73,10 +75,6 @@ var sync = function(infManager) {
 	}).catch(err => {
 		console.log(err);
 	});
-
-	//return infoManager.insert({
-	//	"title": "Hallo Welt!"
-	//});
 }
 
 module.exports = {
@@ -205,10 +203,9 @@ let evaluateEntry = (entry) => {
 
 					// Object with some important information
 					let fileObject = {
-						"id": id,
-						"rev": entry[1].rev,
-						"path": entry[1].path,
-						"mime_type": entry[1]["mime_type"]
+						"id": id,				// unique id for the file
+						"rev": entry[1].rev,    // unique revision id for the current file => changes if the file content change
+						"path": entry[1].path,  // stored path
 					}
 
 					// Extract filename
@@ -226,17 +223,23 @@ let evaluateEntry = (entry) => {
 
 					// Compare if id exists in DB
 					infoManager.findOne(filter).then(data => {
-						// if ID exists in DB	
+						// if ID exists in DB
 						let storedInformation = new Information(data);
 
-						storedInformation.title = filename;
-						storedInformation.extra = fileObject;
-						storedInformation.components = [
-							docu
-						];
+						if (storedInformation.title != filename || storedInformation.extra != fileObject) {
+							// Something changed so upadate it
+							storedInformation.title = filename;
+							storedInformation.extra = fileObject;
+							storedInformation.components = [
+								docu
+							];
 
-						// Update current DB status for the file
-						return infoManager.update(storedInformation);
+							// Update current DB status for the file
+							return infoManager.update(storedInformation);
+						}
+
+						return Promise.resolve();
+
 
 					}).catch(err => {
 						// Else create new Entry			
