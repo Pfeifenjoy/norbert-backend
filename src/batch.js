@@ -14,6 +14,11 @@ core.createCore()
 		core.importInformation()
 			.then(function(){
 				console.log("Imported  Information");
+                //return core.updateTfIdf([]);
+                //return core.wordIndex_addDocument('a', ['a', 'a', 'a', 'b', 'c', 'c']);
+                //return core.updateTfIdf(['a', 'b'], 2);
+			//}).then(function(){
+                //return core.wordIndex_addDocument('b', ['b', 'd', 'd']);
 			}).then(function(){
                 console.log("Updating word index - Entries");
                 // todo

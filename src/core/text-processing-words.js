@@ -90,6 +90,9 @@ function addDocument(docId, allWords) {
     let hist = createWordHistogram(allWords);
     let words = Object.keys(hist);
 
+    // find the largest term frequency using hist 
+    let largestTF = words.map(k => hist[k]).reduce((a, b) => Math.max(a, b), 1);
+
     // make sure all words are in the database
     let wordObjects = getWords.bind(this)(words);
 
@@ -109,7 +112,8 @@ function addDocument(docId, allWords) {
         return {
             'document': docId, 
             'word': obj._id, 
-            'count': hist[obj.word]
+            'count': hist[obj.word],
+            'normalizedCnt': hist[obj.word] / largestTF
         };
     }));
     let countersInserted = counters.then(documents => {
