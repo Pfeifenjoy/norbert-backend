@@ -12,6 +12,7 @@ import newsfeed from './newsfeed-queries';
 import file from "./file";
 import file_upload from './file-upload';
 import text_extractor from './text-extractor';
+import notifications from './notification-queries';
 
 /**
  * Core:
@@ -32,6 +33,7 @@ Object.assign(Core.prototype, newsfeed);
 Object.assign(Core.prototype, file);
 Object.assign(Core.prototype, file_upload);
 Object.assign(Core.prototype, text_extractor);
+Object.assign(Core.prototype, notifications);
 
 
 /**

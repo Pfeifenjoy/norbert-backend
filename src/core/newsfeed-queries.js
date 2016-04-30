@@ -11,9 +11,7 @@ function getNewsfeed(userID){
    	
 }
 
-function splitNmerge([a,b]){
-	return a.concat(b);
-}
+
 
 
 function deleteRecommendation(entryID,userID){
@@ -30,7 +28,7 @@ function deleteRecommendation(entryID,userID){
 }
 
 function getReccomendations(userID){
-	return this.db.collection("entries").find({ owned_by : { $ne : ObjectId(userID)}});
+	return this.db.collection("entries").find({ owned_by : { $ne : ObjectId(userID)}}).limit(10);
 }
 
 function getEntries(userID){

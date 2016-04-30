@@ -65,7 +65,7 @@ router.delete('/recommendation/:id', (req,res) => {
   })
 })
 
-router.get('/reccomendation' , (req,res) => {
+router.get('/recomendation' , (req,res) => {
   var cursor = req.app.core.getReccomendations(req.session.user.id)
   var recommendations = [];
   cursor.each(function(err,doc){

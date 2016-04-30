@@ -18,4 +18,5 @@ function getInformation(userID){
    return result;
 }
 
+
 module.exports.getInformation = getInformation;

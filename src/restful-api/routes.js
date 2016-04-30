@@ -12,6 +12,7 @@ import users from "./users";
 import entries from "./entries";
 import newsfeed from "./newsfeed";
 import files from "./files";
+import notifications from "./notifications";
 
 
 export function initialRoutes(core) {
@@ -34,6 +35,7 @@ export function initialRoutes(core) {
     router.use("/entries", auth, entries);
     router.use("/newsfeed", auth, newsfeed);
     router.use("/files", auth, files);
+    router.use("/notifications", auth, notifications);
     
     return router;
 }
