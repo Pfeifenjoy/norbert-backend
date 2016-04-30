@@ -19,10 +19,11 @@
     },
     "informationProviders": [
         "./information-providers/demo.js",
-		"./information-providers/icalender.js"
+		"./information-providers/icalender.js",
+        "./information-providers/dropbox.js"
     ],
     "files": {
-        "storageService": "./storage-services/demo.js",
+        "storageService": "./storage-services/dropbox.js",
         "tmpFolder": "./files/tmp/"
     },
     "components": [
@@ -31,6 +32,11 @@
         "./components/notification.js"
     ],
     "dropbox": {
-        "token": ""
+        "uid": "558779514",
+        "oAuthToken": "TnEik6UKpfAAAAAAAAAADUMl1EmLQWykmW0fYfLI86Ja-jZHtc8URaU8ZKJVdVcB",
+        "informationPath": "/DHBW - TINF14AIBC",
+        "informationPathID": "UKi922iFmBAAAAAAAAAAAw",
+        "storagePath": "/norbert-upload",
+        "storagePathID": "I6avx4OFbFAAAAAAAAAAAQ"
     }
 }
