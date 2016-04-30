@@ -59,7 +59,12 @@ router.get("/:entryId", (req,res) => {
 })
 
 router.delete("/:entryId", (req,res) => {
-    req.app.core.deleteEntry(req.params.entryId, req.session.user.id)
+    req.app.core.getEntry(req.params.entryId)
+    .then(entry => {
+        if(entry.owned_by = req.session.user.id) {
+            return req.app.core.deleteEntry(entry);
+        }
+    })
     .then(function(){
         res.send('Deleted Entry.');
     })
