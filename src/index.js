@@ -1,5 +1,5 @@
 /**
- * @author Arwed Mett, Tobias Dorra
+ * @author Arwed Mett, Tobias Dorra, Philipp Pütz
  *
  * This startup file runs the HTTP subsystem of 
  * Norbert. It is responsible for the delivery
@@ -8,7 +8,7 @@
  * "batch"-script from time to time.
  */
 import express from 'express';
-import { initialRoutes } from "./restful-api/routes";
+import {initialRoutes} from "./restful-api/routes";
 import core from './core/core';
 import config from "./utils/configuration";
 import scheduler from "./task-scheduler/scheduler"
@@ -24,80 +24,104 @@ app.use(morgan("combined"));
 
 app.use(compression());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({
+	extended: true
+}));
 
 // static files delivery
 app.use("/build", express.static(__dirname + "/frontend/build/"));
 
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/frontend/index.html");
+	res.sendFile(__dirname + "/frontend/index.html");
 })
 
 // restFULL api
 const apiEnabled = config.get('http.api.enabled') || true;
 const apiBaseUrl = config.get('http.api.baseUrl') || '/api/v1';
 
-var mailin = require('mailin');
 
-mailin.start({
-  port: 1337,
-  disableWebhook: true,
-  requireAuthentication : false
-});
-/* Event emitted when a connection with the Mailin smtp server is initiated. */
-mailin.on('startMessage', function (connection) {
-  /* connection = {
-      from: 'sender@somedomain.com',
-      to: 'someaddress@yourdomain.com',
-      id: 't84h5ugf',
-      authentication: { username: null, authenticated: false, status: 'NORMAL' }
-    }
-  }; */
-  console.log(connection);
-});
+/**
+ * Configuration of dropbox
+ */
 
-/* Event emitted after a message was received and parsed. */
-mailin.on('message', function (connection, data, content) {
-  console.log(data);
-  mails.push(data);
-  /* Do something useful with the parsed message here.
-   * Use parsed message `data` directly or use raw message `content`. */
-});
+var sync = Promise.resolve();
 
-mailin.on('error', function(error){
-  console.error(error);
-})
+import dropbox from "./setup/dropboxoauth";
+sync = dropbox.initDropbox();
 
-// Start the task scheduler
-scheduler.start();
+// End dropbox configuration
 
-// Initialize the core
-core.createCore()
-	.then(function(core){
-		// Start the server
-		app.core = core;
-        if (apiEnabled) {
-            app.use(apiBaseUrl, initialRoutes(core));
-        }
-        // Handle routes which don't exist
-        app.use((req, res, next) => {
-            res.status(404).send("Nothing found.")
-        });
+sync.then(() => {
 
-        // Catch errors
-        app.use((err, req, res, next) => {
-            console.error(err);
-            res.status(500).send("Something went wrong");
-        });
-		return app.listen(3001);
-        core.registerInformationTriggers();
-	})
-	.then(function(){
-		console.log('Server is listening at port 3001.');
-	})
-	.catch(function (err){
-		console.log("Something went wrong, could not start the server:");
-		console.log(err);
-		process.exit(1);
+	/**
+	 * Configuration of the mail server
+	 */
+
+	var mailin = require('mailin');
+
+	mailin.start({
+		port: 1337,
+		disableWebhook: true,
+		requireAuthentication: false
+	});
+	/* Event emitted when a connection with the Mailin smtp server is initiated. */
+	mailin.on('startMessage', function(connection) {
+		/* connection = {
+		    from: 'sender@somedomain.com',
+		    to: 'someaddress@yourdomain.com',
+		    id: 't84h5ugf',
+		    authentication: { username: null, authenticated: false, status: 'NORMAL' }
+		  }
+		}; */
+		console.log(connection);
 	});
 
+	/* Event emitted after a message was received and parsed. */
+	mailin.on('message', function(connection, data, content) {
+		console.log(data);
+		mails.push(data);
+		/* Do something useful with the parsed message here.
+		 * Use parsed message `data` directly or use raw message `content`. */
+	});
+
+	mailin.on('error', function(error) {
+		console.error(error);
+	})
+
+	// End of mail server configuration
+
+
+	// Start the task scheduler
+	scheduler.start();
+
+	// Initialize the core
+	core.createCore()
+		.then(function(core) {
+			// Start the server
+			app.core = core;
+			if (apiEnabled) {
+				app.use(apiBaseUrl, initialRoutes(core));
+			}
+			// Handle routes which don't exist
+			app.use((req, res, next) => {
+				res.status(404).send("Nothing found.")
+			});
+
+			// Catch errors
+			app.use((err, req, res, next) => {
+				console.error(err);
+				res.status(500).send("Something went wrong");
+			});
+			return app.listen(3001);
+			core.registerInformationTriggers();
+		})
+		.then(function() {
+			console.log('Server is listening at port 3001.');
+		})
+		.catch(function(err) {
+			console.log("Something went wrong, could not start the server:");
+			console.log(err);
+			process.exit(1);
+		});
+
+});
