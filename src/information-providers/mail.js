@@ -1,9 +1,9 @@
 /*
  *
  **/
-import ObjectID from 'mongodb';
-import createComponent from './../core/component';
-import Information from './../core/information';
+import {ObjectID} from 'mongodb';
+import {createComponent} from './../core/component';
+import {Information} from './../core/information';
 import fs from 'fs';
 
 const temp_file_path = './files/tmp/mail.json';
@@ -81,15 +81,11 @@ let processMails = (newMails, infoManager) => {
 
     newMails.forEach(mail => {
         sync = sync.then(() => {
-            console.log("err");
             let desc = createComponent('components-description');
             desc.text = mail.text;
-            console.log("err2");
 
             let info = new Information();
             info.title = "Mail von " + mail.sender + " -- Betreff: " + mail.subject;
-
-            console.log("Mail von " + mail.sender + " -- Betreff: " + mail.subject);
 
             info.components = [
                 desc
