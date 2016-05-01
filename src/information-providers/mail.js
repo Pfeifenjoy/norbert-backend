@@ -4,7 +4,7 @@ import {Information} from './../core/information';
 //import mail from './../../files/tmp/mail.json';
 import fs from 'fs';
 //import mailin from 'mailin';
-const temp_file_path = './../../files/tmp/mail.json';
+const temp_file_path = './files/tmp/mail.json';
 
 
 function checkForFile(path){
@@ -40,12 +40,19 @@ var registerTriggers = function(trigger){
 
         /* Event emitted after a message was received and parsed. */
         mailin.on('message', function (connection, data, content) {
-            /*mails.push(data);
-            fs.writeFile(temp_file_path, JSON.stringify(mails,null,4),err => {
-                if (err) console.log(err);
-                console.log('Updated file');
-                }
-            )*/
+            fs.readFile(temp_file_path, (err,previous) => {
+                if (err) throw err;
+                var mails = JSON.parse(previous);
+                //mails.push(JSON.stringify(data,null,4));
+                fs.writeFile(temp_file_path,JSON.stringify(data,null,4),err => {
+                    if (err) console.log(err);
+                    //console.log(JSON.stringify(mails,null,4));
+                    console.log(temp_file_path);
+                    console.log('Updated file');
+                    }
+            )
+            })
+            
             console.log(data);
         });
 
