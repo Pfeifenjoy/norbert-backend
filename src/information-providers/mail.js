@@ -1,6 +1,6 @@
 /*
- *
- **/
+ * Simon Oswald, Philipp Pütz 
+ */
 import {ObjectID} from 'mongodb';
 import {createComponent} from './../core/component';
 import {Information} from './../core/information';

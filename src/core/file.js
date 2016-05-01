@@ -145,7 +145,7 @@ class File {
     upload() {
         let [ssName, storageService] = getStorageService();
 
-        console.log(this.state == local_file ? "uploading" : "not uploadng");
+        //console.log(this.state == local_file ? "uploading" : "not uploadng");
         if (this.state == local_file) {
             let oldLocation = this._obj.location;
             return storageService.upload(oldLocation, this.originalFileName)
