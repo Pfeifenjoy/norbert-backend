@@ -6,7 +6,6 @@ import fs from 'fs';
 //import mailin from 'mailin';
 const temp_file_path = './../../files/tmp/mail.json';
 
-var mails = require(temp_file_path);
 
 function checkForFile(path){
 
@@ -41,12 +40,13 @@ var registerTriggers = function(trigger){
 
         /* Event emitted after a message was received and parsed. */
         mailin.on('message', function (connection, data, content) {
-            mails.push(data);
+            /*mails.push(data);
             fs.writeFile(temp_file_path, JSON.stringify(mails,null,4),err => {
                 if (err) console.log(err);
                 console.log('Updated file');
                 }
-            )
+            )*/
+            console.log(data);
         });
 
         mailin.on('error', function(error){
