@@ -21,27 +21,26 @@ function uploadFiles() {
 
 function uploadEntries(cursor) {
     return new Promise((resolve, reject) => {
+        let uploads = [];
         cursor.each((err, doc) => {
             if(err) console.error(err);
             else if(!doc) {
-                return resolve();
+                let sync = Promise.all(uploads)
+                .then(() => {
+                    console.log(files);
+                });
+                return resolve(sync);
             }
             else {
                 let { components } = doc;
                 let files = components
                 .map(c => loadComponent(c).getFiles())
                 .reduce((a, b) => a.concat(b), [])
-                let uploads = [];
 
                 for(let file of files) {
-                    uploads.push(uploadNewsfeedObjectDocs(file))
+                    uploads.push(file.upload())
                 }
 
-                console.log(uploads);
-                Promise.all(uploads)
-                .then(() => {
-                    console.log(files);
-                });
 
             }
         });
@@ -84,10 +83,6 @@ function uploadCursorDocuments(cursor) {
 
     return cursor.next()
         .then(uploadNext);
-}
-
-function uploadNewsfeedObjectDocs(file) {
-    return file.upload();
 }
 
 module.exports.uploadFiles = uploadFiles;

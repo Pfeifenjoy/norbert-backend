@@ -148,10 +148,8 @@ class File {
         console.log(this.state == local_file ? "uploading" : "not uploadng");
         if (this.state == local_file) {
             var fileName = this._obj.location;
-                console.log("uploaded");
-                try {
-            return storageService.upload(fileName).then(remoteFile => {
-                console.log("uploaded");
+            return storageService.upload(fileName, Date.now() + ".png")
+            .then(remoteFile => {
                 this._obj.ss = ssName;
                 this._obj.state = remote_file;
                 this._obj.location = remoteFile;
@@ -160,12 +158,8 @@ class File {
                 return deleteFile(fileName);
             })
             .catch(e => {
-                console.log("ksdfjl");
                 console.error(e);
             });
-                } catch(e) {
-                    console.error(e);
-                }
         } else if(this.state == remote_file) {
             return Promise.resolve();
         } else {
