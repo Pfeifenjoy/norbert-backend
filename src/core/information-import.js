@@ -4,6 +4,7 @@
 import {Information} from './information';
 import config from './../utils/configuration';
 import {loadPlugins} from '../utils/load-plugins';
+import {trigger} from './../task-scheduler/scheduler';
 
 /**
  * Loads all information providers and imports
@@ -142,4 +143,31 @@ class InfoManager{
 
 }
 
+function registerInformationTriggers(){
+	// Use a promise for synchronisation
+	var sync = Promise.resolve();
+
+	// get the providers from the config file.
+	var providerConfig = config.get('informationProviders') || [];
+	var providers = loadPlugins(providerConfig);
+
+	// call the registerTriggers method for each provider.
+	for (let name of Object.keys(providers)) {
+		let provider = providers[name];
+		sync = sync.then(() => {
+            if (provider.registerTriggers !== undefined) {
+                console.log('Registering triggers for: ', name);
+                return provider.registerTriggers(trigger);
+            } else {
+                return 'Nothing to do.';
+            }
+		});
+	}
+
+	// return the promise
+	return sync;
+     
+}
+
 module.exports.importInformation = importInformation;
+module.exports.registerInformationTriggers = registerInformationTriggers;

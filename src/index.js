@@ -60,6 +60,7 @@ core.createCore()
             res.status(500).send("Something went wrong");
         });
 		return app.listen(3001);
+        core.registerInformationTriggers();
 	})
 	.then(function(){
 		console.log('Server is listening at port 3001.');
