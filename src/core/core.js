@@ -15,6 +15,7 @@ import text_extractor from './text-extractor';
 import textp_words from './text-processing-words';
 import textp_tfidf from './text-processing-tfidf';
 import notifications from './notification-queries';
+import search from './search-queries';
 
 /**
  * Core:
@@ -38,6 +39,7 @@ Object.assign(Core.prototype, text_extractor);
 Object.assign(Core.prototype, textp_words);
 Object.assign(Core.prototype, textp_tfidf);
 Object.assign(Core.prototype, notifications);
+Object.assign(Core.prototype, search);
 
 
 /**
