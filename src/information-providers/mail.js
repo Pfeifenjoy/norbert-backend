@@ -1,48 +1,70 @@
 import {ObjectID} from 'mongodb';
 import {createComponent} from './../core/component';
 import {Information} from './../core/information';
+//import mail from './../../files/tmp/mail.json';
+import fs from 'fs';
 //import mailin from 'mailin';
+const temp_file_path = './../../files/tmp/mail.json';
+
+var mails = require(temp_file_path);
+
+function checkForFile(path){
+
+  var promise = fs.exists(path, (exists => {
+    console.log(exists);
+    if(!exists){
+      fs.writeFile(path, '{}',(error => {
+        if(error) console.log(error);
+        console.log('Created file');
+        })
+      )}
+  }));
+  return promise;
+};
 
 
 
 
+var registerTriggers = function(trigger){
+    console.log(trigger);
+    var mailin = require('mailin');
+    
+    
+    /*
+    var mails = [];
+    console.log('Checking for File')
+    checkForFile(temp_file_path)
+    .then(()=>{*/
+        mailin.start({
+          port: 1337,
+          disableWebhook: true,
+          requireAuthentication : false
+        });
 
-var registerTriggers = function(){
-  var mailin = require('mailin');
-  var mails = [];
-  mailin.start({
-    port: 1337,
-    disableWebhook: true,
-    requireAuthentication : false
-  });
-  /* Event emitted when a connection with the Mailin smtp server is initiated. */
-  mailin.on('startMessage', function (connection) {
-    /* connection = {
-        from: 'sender@somedomain.com',
-        to: 'someaddress@yourdomain.com',
-        id: 't84h5ugf',
-        authentication: { username: null, authenticated: false, status: 'NORMAL' }
-      }
-    }; */
-    console.log(connection);
-  });
+        /* Event emitted when a connection with the Mailin smtp server is initiated. */
+        mailin.on('startMessage', function (connection) {
+          console.log(connection);
+        });
 
-  /* Event emitted after a message was received and parsed. */
-  mailin.on('message', function (connection, data, content) {
-    console.log(data);
-    mails.push(data);
-    /* Do something useful with the parsed message here.
-     * Use parsed message `data` directly or use raw message `content`. */
-  });
+        /* Event emitted after a message was received and parsed. */
+        mailin.on('message', function (connection, data, content) {
+            mails.push(data);
+            fs.writeFile(temp_file_path, JSON.stringify(mails,null,4),err => {
+                if (err) console.log(err);
+                console.log('Updated file');
+                }
+            )
+        });
 
-  mailin.on('error', function(error){
-    console.error(error);
-  })
+        mailin.on('error', function(error){
+          console.error(error);
+        });
+    //})
 }
+
 
 var sync = function(infoManager){
     //doesnt work yet
-    
     let toInsert = [];
     // Create a description component and fill it with some text.
     /*mails.forEach(mail => {

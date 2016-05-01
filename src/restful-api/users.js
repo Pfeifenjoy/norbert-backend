@@ -23,7 +23,7 @@ router.post('/', (req, res) => {
     	});  
 });
 
-router.put("/:userId", (req, res) => {
+router.put("/", (req, res) => {
     let user = req.body;
     if(req.session.authenticated){
     req.app.core.updateUser(req.session.user, user)
