@@ -152,10 +152,10 @@ class File {
             .then(remoteFile => {
                 this._obj.ss = ssName;
                 this._obj.state = remote_file;
-                this._obj.location = remoteFile;
+                this._obj.location = remoteFile.dbRepresentation.location;
                 console.log("uploaded");
 
-                //return deleteFile(oldLocation);
+                return deleteFile(oldLocation);
             })
             .catch(e => {
                 console.error(e);

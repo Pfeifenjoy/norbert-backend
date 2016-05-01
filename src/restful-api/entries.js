@@ -65,6 +65,7 @@ router.get("/:entryId", (req,res) => {
 })
 
 router.delete("/:entryId", (req,res) => {
+    console.log(req.params.entryId);
     req.app.core.getEntry(req.params.entryId)
     .then(entry => {
         if(entry.owned_by = req.session.user.id) {

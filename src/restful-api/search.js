@@ -6,7 +6,7 @@ var router = new Router();
 
 router.get('/',(req,res) => {
 	
-	req.app.core.search(JSON.parse(req.query.keywords),req.session.user)
+	req.app.core.search(req.query.keywords,req.session.user)
 	.then( results => {
 		res.send(results);
 	})

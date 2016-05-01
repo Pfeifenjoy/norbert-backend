@@ -65,7 +65,7 @@ function upload(localFile, originalFileName) {
         let fileObject = {
             "id": id,
             "rev": dropboxObject.rev,
-            "path": dropboxObject.path,
+            "path": dropboxObject.path_display,
         }
 
         // Extract filename
@@ -75,6 +75,8 @@ function upload(localFile, originalFileName) {
         let myFile = new File();
         // set location of the file
         myFile.setToRemoteFile(fileObject, filename);
+
+        return myFile;
     })
 }
 
@@ -122,7 +124,10 @@ function getUrl(remoteFile) {
     const dropboxHomeUrl = "www.dropbox.com/home";
 
     // Extract filename 
+    console.log("hier", remoteFile);
+    console.log(remoteFile);
     let filename = remoteFile.path.substring(remoteFile.path.lastIndexOf("/") + 1);
+    console.log("hier");
 
     // Extract path
     let filepath = remoteFile.path.substring(0, remoteFile.path.lastIndexOf("/"));
