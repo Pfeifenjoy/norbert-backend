@@ -144,20 +144,19 @@ class File {
      */
     upload() {
         let [ssName, storageService] = getStorageService();
-        console.log(this._obj.location);
         let filename = /\/([^\/]*)$/.exec(this._obj.location)[1];
-        console.log(filename);
 
         console.log(this.state == local_file ? "uploading" : "not uploadng");
         if (this.state == local_file) {
-            return storageService.upload(this._obj.location, filename)
+            let oldLocation = this._obj.location;
+            return storageService.upload(oldLocation, filename)
             .then(remoteFile => {
                 this._obj.ss = ssName;
                 this._obj.state = remote_file;
                 this._obj.location = remoteFile;
                 console.log("uploaded");
 
-                return deleteFile(fileName);
+                return deleteFile(oldLocation);
             })
             .catch(e => {
                 console.error(e);
