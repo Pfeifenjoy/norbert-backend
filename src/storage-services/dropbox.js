@@ -8,6 +8,7 @@ import fs from 'fs';
 import config from '../utils/configuration.js';
 import https from 'https';
 import querystring from 'querystring';
+import { File } from "./../core/file";
 
 
 const contentUrl = "content.dropboxapi.com";
@@ -54,33 +55,27 @@ function upload(localFile, originalFileName) {
         throw "There is an error in the config file: Setting dropbox.storagePath is required!";
     }
 
-    return new Promise((resolve, reject) => {
+    return uploadFile(originalFileName, localFile, token, uploadFolder)
+    .then(dropboxObject => {
 
-        uploadFile(originalFileName, localFile, token, uploadFolder).then(dropboxObject => {
+        // Extract id
+        let id = dropboxObject["id"].substring(dropboxObject["id"].lastIndexOf(":") + 1);
 
-            // Extract id
-            let id = dropboxObject["id"].substring(dropboxObject["id"].lastIndexOf(":") + 1);
+        // Object with some important information
+        let fileObject = {
+            "id": id,
+            "rev": dropboxObject.rev,
+            "path": dropboxObject.path,
+        }
 
-            // Object with some important information
-            let fileObject = {
-                "id": id,
-                "rev": dropboxObject.rev,
-                "path": dropboxObject.path,
-            }
+        // Extract filename
+        let filename = dropboxObject["name"];
 
-            // Extract filename
-            let filename = dropboxObject.path.substring(dropboxObject.path.lastIndexOf("/") + 1);
-
-            // Create new file
-            let myFile = new File();
-            // set location of the file
-            myFile.setToRemoteFile(fileObject, filename);
-
-            resolve(myFile);
-        }).catch(err => {
-            recject(err);
-        });
-    });
+        // Create new file
+        let myFile = new File();
+        // set location of the file
+        myFile.setToRemoteFile(fileObject, filename);
+    })
 }
 
 /**
