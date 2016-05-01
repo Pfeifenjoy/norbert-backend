@@ -6,7 +6,7 @@ import { Router } from 'express';
 let router = new Router();
 
 router.get('/' , (req,res) => {
-	req.app.core.getNotifications(req.session.user.id, 'i')
+	req.app.core.getNotifications(req.session.user.id)
 	.then(result => {
 		res.status(200).send(result);
 	})

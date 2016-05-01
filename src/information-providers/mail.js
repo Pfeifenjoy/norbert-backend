@@ -45,7 +45,6 @@ let registerTriggers = (trigger) => {
         // Check if file exists
         fs.stat(temp_file_path, function(err, stat) {
             if (err == null) {
-
                 // File exists so read file
                 fs.readFile(temp_file_path, (err, data) => {
                     if (err) throw err;
