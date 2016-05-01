@@ -19,7 +19,6 @@ router.post("/", (req, res) => {
     entry.userRepresentation = userObject;
     entry.owned_by = owned_by;
 
-    console.log(entry);
     // store
     req.app.core.createEntry(entry).then(entry => {
         res.status(201).send(entry.userRepresentation);
