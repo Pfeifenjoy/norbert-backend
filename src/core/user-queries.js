@@ -15,16 +15,22 @@ function initUserCollection( ){
 	console.log("Created Unique Key");
 };
 
-function updateUser(userId, user){
+function updateUser(userSession, user){
 	var toSet = {};
-	if(user.password){
-	 	user.password = hashPassword(user.password);
-        toSet.password = user.password;
+	if(user.password_new && user.password_old){
+		this.authUser(userSession.username, user.password_old)
+		.then(() => {
+			user.password_new = hashPassword(user.password_new);
+        	toSet.password = user.password_new;
+        })
+        .catch(e => {
+        	console.log('Password and Username did not match')
+        })
+	 	
     }
-    //if(user.username) toSet.username = user.username;
     if(user.name) toSet.name = user.name;
     var setObj = { $set : toSet}
-	return this.db.collection("users").updateOne({"username":userId }, setObj);
+	return this.db.collection("users").updateOne({"username":userSession.username }, setObj);
 }
 
 function deleteUser(userId){

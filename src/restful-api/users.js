@@ -24,18 +24,17 @@ router.post('/', (req, res) => {
 });
 
 router.put("/:userId", (req, res) => {
-    let userId = req.params.userId;
     let user = req.body;
-    if(req.session.user.username === userId){
-    req.app.core.updateUser(userId, user)
+    if(req.session.authenticated){
+    req.app.core.updateUser(req.session.user, user)
         .then(function (){
 
             res.send('User updated.');
         })
         .catch(function(){
-            res.status(500).send('Username ' + username +' is already in use');
+            res.status(500).send('Could not update user');
         });
-    }else res.send(403).send('You can not change other users');  
+    }else res.send(403).send('You need to be logged in to change your user');  
 });
 
 router.delete("/:userId", (req,res) => {

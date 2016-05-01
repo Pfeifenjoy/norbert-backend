@@ -5,6 +5,41 @@ import {Information} from './../core/information';
 
 
 
+
+
+var registerTriggers = function(){
+  var mailin = require('mailin');
+  var mails = [];
+  mailin.start({
+    port: 1337,
+    disableWebhook: true,
+    requireAuthentication : false
+  });
+  /* Event emitted when a connection with the Mailin smtp server is initiated. */
+  mailin.on('startMessage', function (connection) {
+    /* connection = {
+        from: 'sender@somedomain.com',
+        to: 'someaddress@yourdomain.com',
+        id: 't84h5ugf',
+        authentication: { username: null, authenticated: false, status: 'NORMAL' }
+      }
+    }; */
+    console.log(connection);
+  });
+
+  /* Event emitted after a message was received and parsed. */
+  mailin.on('message', function (connection, data, content) {
+    console.log(data);
+    mails.push(data);
+    /* Do something useful with the parsed message here.
+     * Use parsed message `data` directly or use raw message `content`. */
+  });
+
+  mailin.on('error', function(error){
+    console.error(error);
+  })
+}
+
 var sync = function(infoManager){
     //doesnt work yet
     
@@ -46,6 +81,7 @@ var sync = function(infoManager){
 module.exports = {
 	"pluginName": "info-provider-mail",
     "pluginObject": {
-        "sync": sync
+        "sync": sync,
+        "registerTriggers" : registerTriggers
     }
 };
