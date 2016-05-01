@@ -75,6 +75,8 @@ function upload(localFile, originalFileName) {
         let myFile = new File();
         // set location of the file
         myFile.setToRemoteFile(fileObject, filename);
+
+        return myFile;
     })
 }
 

@@ -18,7 +18,6 @@
         "interval": 60000
     },
     "informationProviders": [
-        "./information-providers/demo.js",
         "./information-providers/icalender.js",
         "./information-providers/dropbox.js",
         "./information-providers/mail.js"
