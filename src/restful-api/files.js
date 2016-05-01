@@ -11,6 +11,7 @@ router.post("/", (req, res) => {
     let busboy = new Busboy({ headers: req.headers });
     let entryId, componentId;
     let file = new UniqueFile;
+    let originalFileName = "unknown";
 
     function updateEntry() {
         if(entryId && componentId && file.state === states.local_file) {
@@ -19,6 +20,7 @@ router.post("/", (req, res) => {
                 if(entry.owned_by !== req.session.user.id) throw Error("Unauthorized");
                 let { components } = entry;
                 components[componentId].file = file;
+                components[componentId].originalFileName = originalFileName;
                 entry.components = components;
                 return req.app.core.updateEntry(entry);
             })
@@ -37,6 +39,7 @@ router.post("/", (req, res) => {
         })
         stream.on("close", () => {
             file.state = states.local_file
+            originalFileName = filename;
             updateEntry();
         })
         data.pipe(stream);
