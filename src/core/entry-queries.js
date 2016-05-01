@@ -39,10 +39,35 @@ export function deleteEntry(entry){
     return updateEntry.bind(this)(entry);
 }
 
+export function findDirtyEntries(){
+    return this.db.collection("entries")
+        .find({'dirty': true, 'deleted': false})
+        .toArray()
+        .then(data => {
+            return data.map(e => new Entry(e));
+        });
+}
+
+export function findDeletedEntries(){
+    return this.db.collection("entries")
+        .find({'dirty': true, 'deleted': true})
+        .toArray()
+        .then(data => {
+            return data.map(e => new Entry(e));
+        });
+}
+
+export function getEntryCount(){
+     return this.db.collection('entries').count();
+}
+
 export default {
     createEntry,
     getEntry,
     updateEntry,
-    deleteEntry
+    deleteEntry,
+    findDirtyEntries,
+    findDeletedEntries,
+    getEntryCount
 }
 

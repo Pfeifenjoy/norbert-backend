@@ -14,20 +14,9 @@ core.createCore()
 		core.importInformation()
 			.then(function(){
 				console.log("Imported  Information");
-                //return core.updateTfIdf([]);
-                //return core.wordIndex_addDocument('a', ['a', 'a', 'a', 'b', 'c', 'c']);
-                //return core.updateTfIdf(['a', 'b'], 2);
-			//}).then(function(){
-                //return core.wordIndex_addDocument('b', ['b', 'd', 'd']);
 			}).then(function(){
-                console.log("Updating word index - Entries");
-                // todo
-                // - get updated entries
-                // - extract text
-                // - update word index
-                // - update tfidf
-                console.log("Updating word index - Information");
-                // todo
+                console.log("Updating word index");
+                return core.process();
             }).then(function(){
                 console.log("Updated word index");
             })
@@ -44,6 +33,7 @@ core.createCore()
             .catch(function(err){
 				console.log("Fail.");
 				console.log(err);
+                console.log(err.stack);
 				process.exit(1);
 			});
 	})

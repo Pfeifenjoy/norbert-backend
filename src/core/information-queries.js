@@ -19,6 +19,28 @@ function getInformation(userID){
    return result;
 }
 
+function findDirtyInformation(){
+    return this.db.collection("information")
+        .find({'dirty': true, 'deleted': false})
+        .toArray()
+        .then(data => {
+            return data.map(e => new Information(e));
+        });
+}
+
+function findDeletedInformation(){
+    return this.db.collection("information")
+        .find({'dirty': true, 'deleted': true})
+        .toArray()
+        .then(data => {
+            return data.map(e => new Information(e));
+        });
+}
+
+function getInformationCount(){
+     return this.db.collection('information').count();
+}
+
 function hideInformation(userID, informationID){
     return this.db.collection('information').findOne({ '_id' : ObjectId(informationID)})
     .then(i => {
@@ -35,4 +57,8 @@ function hideInformation(userID, informationID){
 
 
 module.exports.getInformation = getInformation;
+module.exports.findDirtyInformation = findDirtyInformation;
+module.exports.findDeletedInformation = findDeletedInformation;
+module.exports.getInformationCount = getInformationCount;
 module.exports.hideInformation = hideInformation;
+

@@ -69,6 +69,10 @@ function getWords(words) {
         .then(arg => arg[2].concat(arg[1]));
 }
 
+function getWordsById(wordIds) {
+    return this.db.collection('words').find({'_id': {'$in': wordIds}}).toArray()
+}
+
 /**
  * Creates a statistic of how often each word in words was used.
  */
@@ -174,8 +178,21 @@ function getDocuments(wordIds) {
     return this.db.collection('words_in_documents').find({'word': {'$in': wordIds}}).toArray();
 }
 
+function getWordIdsOfDocuments(documentIds) {
+    return this.db.collection('words_in_documents')
+        .find({'document': {'$in': documentIds}})
+        .toArray()
+        .then(docs => {
+             return docs.map(d => d.word);
+        });
+}
+
 module.exports.wordIndex_getWords = getWords;
+module.exports.wordIndex_getWordsById = getWordsById;
 module.exports.wordIndex_addDocument = addDocument;
 module.exports.wordIndex_removeDocument = removeDocument;
+module.exports.wordIndex_updateDocument = updateDocument;
 module.exports.wordIndex_getDocuments = getDocuments;
+module.exports.wordIndex_getWordIdsOfDocuments = getWordIdsOfDocuments;
+
 

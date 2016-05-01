@@ -19,8 +19,7 @@
     },
     "informationProviders": [
         "./information-providers/icalender.js",
-        "./information-providers/dropbox.js",
-        "./information-providers/mail.js"
+        "./information-providers/dropbox.js"
     ],
     "files": {
         "storageService": "./storage-services/dropbox.js",

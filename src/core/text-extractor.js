@@ -91,20 +91,5 @@ var extractText = function(entry) {
     });
 }
 
-function testMe() {
-
-    return this.db.collection('information')
-        .find({})
-        .limit(10)
-        .toArray()
-        .then(data => {
-            let rawInfo = data[1];
-            let info = new Information(rawInfo);
-            return extractText(info);
-        }).then(text => {
-            console.log('Text: ', text);
-        });
-}
-
-module.exports.testMe = testMe;
+module.exports.extractText = extractText;
 
