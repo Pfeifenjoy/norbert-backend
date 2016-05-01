@@ -29,7 +29,8 @@
     "components": [
         "./components/description.js",
         "./components/document.js",
-        "./components/notification.js"
+        "./components/notification.js",
+        "./components/task.js"
     ],
     "dropbox": {
         "uid": "558779514",
