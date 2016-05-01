@@ -1,1 +1,0 @@
-This file stops git from removing the folder
