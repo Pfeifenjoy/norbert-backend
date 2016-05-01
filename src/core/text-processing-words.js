@@ -70,7 +70,7 @@ function getWords(words) {
 }
 
 function getWordsById(wordIds) {
-    return this.db.collection('words').toArray()
+    return this.db.collection('words').find({'_id': {'$in': wordIds}}).toArray()
 }
 
 /**

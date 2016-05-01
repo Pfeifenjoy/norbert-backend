@@ -33,6 +33,7 @@ core.createCore()
             .catch(function(err){
 				console.log("Fail.");
 				console.log(err);
+                console.log(err.stack);
 				process.exit(1);
 			});
 	})

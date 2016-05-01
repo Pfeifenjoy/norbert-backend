@@ -1,3 +1,4 @@
+
 function toIds(entries, type) {
     let documentIds = entries.map(e => {
         return {'type': type, 'id': e.id};
@@ -35,7 +36,7 @@ function updateSingleDocumentInIndex(entry, type) {
                  + result[1] + ' ' + result[1] + ' '
                  + result[2];
         let tokens = this.tokenize(text);        
-        let filtered = tokens.filter(t => this.isStopWord(t));
+        let filtered = tokens.filter(t => !this.isStopWord(t));
         let stemms = filtered.map(word => this.stemm(word));
         return stemms;
     });
