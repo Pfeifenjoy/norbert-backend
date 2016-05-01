@@ -9,58 +9,44 @@ function uploadFiles() {
     let informationCursor = this.db.collection('information').find(query);
     let entryCursor = this.db.collection('entries').find(query);
 
-    let uploadInfo  = uploadCursorDocuments.bind(null, informationCursor);
-    let uploadEntry = uploadCursorDocuments.bind(null, entryCursor);
     let finish = ()=>{return Promise.resolve();}; 
 
     return Promise.resolve()
-        .then(uploadEntry)
-        .then(uploadInfo, uploadInfo)
+        .then(uploadCursorDocuments.bind(this, entryCursor))
+        .then(uploadCursorDocuments.bind(this, informationCursor))
         .then(finish, finish);
 }
 
 function uploadCursorDocuments(cursor) {
-    let upload = obj => {
+    return new Promise((resolve, reject) => {
+        let uploads = [];
+        let components = null;
+        cursor.each((err, doc) => {
+            if(err) console.error(err);
+            else if(!doc) {
+                return Promise.all(uploads)
+                .then(() => {
+                    console.log(components);
+                })
+                .then(resolve)
+                .catch(reject);
+            }
+            else {
+                components = doc.components;
+                let files = components
+                .map(c => loadComponent(c).getFiles())
+                .reduce((a, b) => a.concat(b), [])
 
-        // get the files
-        let files = obj.components.map(c => {
-            let component = loadComponent(c);
-            return component.getFiles();
-        }).reduce((a, b) => {
-            return a.concat(b);
-        });
-
-        // upload: use a promise for syncing
-        let sync = Promise.resolve();
-        for (let file of files) {
-            let doUpload = uploadNewsfeedObjectDocs.bind(null, file);
-            sync = sync.then(doUpload, doUpload); 
-        }
-
-        return sync;
-
-    };
-
-    let uploadNext = () => {
-        return cursor.next()
-            .then((obj) => {
-                if (obj) {
-                    return upload(obj)
-                        .then(uploadNext);
+                for(let file of files) {
+                    uploads.push(file.upload())
                 }
-            });
-    };
 
-    return cursor.next()
-        .then(uploadNext);
+
+            }
+        });
+    });
 }
 
-function uploadNewsfeedObjectDocs(file) {
-    if (file.status == states.local_file) {
-         return file.upload();
-    } else {
-         return Promise.resolve();
-    }
-}
+
 
 module.exports.uploadFiles = uploadFiles;

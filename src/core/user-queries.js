@@ -15,16 +15,9 @@ function initUserCollection( ){
 	console.log("Created Unique Key");
 };
 
-function updateUser(userId, user){
-	var toSet = {};
-	if(user.password){
-	 	user.password = hashPassword(user.password);
-        toSet.password = user.password;
-    }
-    //if(user.username) toSet.username = user.username;
-    if(user.name) toSet.name = user.name;
-    var setObj = { $set : toSet}
-	return this.db.collection("users").updateOne({"username":userId }, setObj);
+function updateUser(username, password_new){
+	password_new = hashPassword(password_new);
+	return this.db.collection("users").update({"username" : username}, {$set : {"password" : password_new}} );
 }
 
 function deleteUser(userId){
@@ -34,6 +27,7 @@ function deleteUser(userId){
 
 function authUser(username, password){
 	password = hashPassword(password);
+	console.log(password);
 	return this.db.collection("users").findOne({"username":username, "password" : password });
 }
 

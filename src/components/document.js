@@ -9,19 +9,21 @@ class DocumentComponent extends Component {
 
     constructor(dbObject) {
         super(dbObject);
-        this.file = new File(this._data);
+        this._file = new File(this._data);
     }
 
+    get file() {
+        return this._file;
+    }
+    set file(file) {
+        this._file = file;
+    }
     getText() {
         return '';
     }
 
     getFiles() {
-        if (this.file.state === states.remote_file) {
-            return [this.file];
-        } else {
-            return [];
-        }
+        return [this.file];
     }
 
     getNotifications() {

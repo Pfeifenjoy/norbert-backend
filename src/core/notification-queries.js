@@ -1,3 +1,6 @@
+/**
+ * @author Simon Oswald, Arwed Mett
+ */
 import { Entry } from './entry.js';
 import { Information} from './information.js';
 

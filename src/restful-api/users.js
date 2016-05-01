@@ -23,25 +23,28 @@ router.post('/', (req, res) => {
     	});  
 });
 
-router.put("/:userId", (req, res) => {
-    let userId = req.params.userId;
-    let user = req.body;
-    if(req.session.user.username === userId){
-    req.app.core.updateUser(userId, user)
-        .then(function (){
-
-            res.send('User updated.');
+router.put('/', (req, res) => {
+    let { password_old, password_new } = req.body;
+    req.app.core.authUser(req.session.user.username, password_old)
+    .then(user => {
+        req.app.core.updateUser(user.username, password_new)
+        .then(() => {
+             res.send('User updated.');
         })
-        .catch(function(){
-            res.status(500).send('Username ' + username +' is already in use');
-        });
-    }else res.send(403).send('You can not change other users');  
+        .catch(e => {
+            console.error(e);
+            res.status(500).send("Could not update");
+        })
+    })
+    .catch(e => {
+            console.error(e);
+            res.status(500).send("Could not update");
+    })
 });
 
 router.delete("/:userId", (req,res) => {
     let userId = req.params.userId;
-    console.log(userId);
-    if(req.session.user.username === userId){
+    if(req.session.user.id === userId){
     req.app.core.deleteUser(userId)
         .then(function(){
             res.send('User ' + userId + ' was succesfully deleted.');

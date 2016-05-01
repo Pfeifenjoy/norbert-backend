@@ -30,8 +30,18 @@ core.createCore()
                 // todo
             }).then(function(){
                 console.log("Updated word index");
+            })
+            .then(() => {
+                console.log("Starting uploading files.");
+                return core.uploadFiles()
+                .then(() => {
+                    console.log("Finished uploading files.");
+                })
+            })
+            .then(() => {
 				process.exit(0);
-            }).catch(function(err){
+            })
+            .catch(function(err){
 				console.log("Fail.");
 				console.log(err);
 				process.exit(1);

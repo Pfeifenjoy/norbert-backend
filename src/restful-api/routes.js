@@ -14,6 +14,7 @@ import newsfeed from "./newsfeed";
 import files from "./files";
 import notifications from "./notifications";
 import recommendations from "./recommendations";
+import search from "./search";
 
 
 export function initialRoutes(core) {
@@ -38,6 +39,7 @@ export function initialRoutes(core) {
     router.use("/files", auth, files);
     router.use("/notifications", auth, notifications);
     router.use("/recommendations", auth, recommendations);
+    router.use("/search", auth, search);
     
     return router;
 }
