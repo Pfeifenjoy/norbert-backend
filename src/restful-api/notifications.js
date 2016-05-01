@@ -1,3 +1,6 @@
+/**
+ * @author Simon Oswald
+ */
 import { Router } from 'express';
 
 let router = new Router();
