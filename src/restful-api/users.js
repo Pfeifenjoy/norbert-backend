@@ -44,8 +44,7 @@ router.put('/', (req, res) => {
 
 router.delete("/:userId", (req,res) => {
     let userId = req.params.userId;
-    console.log(userId);
-    if(req.session.user.username === userId){
+    if(req.session.user.id === userId){
     req.app.core.deleteUser(userId)
         .then(function(){
             res.send('User ' + userId + ' was succesfully deleted.');

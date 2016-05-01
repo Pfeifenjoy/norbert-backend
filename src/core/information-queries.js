@@ -3,6 +3,7 @@
  */
 
 import {Information} from './information';
+import {ObjectId} from 'mongodb';
 
 
 function getInformation(userID){
@@ -18,5 +19,20 @@ function getInformation(userID){
    return result;
 }
 
+function hideInformation(userID, informationID){
+    return this.db.collection('information').findOne({ '_id' : ObjectId(informationID)})
+    .then(i => {
+      if(i){
+        let info = new Information(i);
+        let data = info.dbRepresentation;
+        this.db.collection('information').update({_id : ObjectId(informationID)}, data);
+      }
+    })
+    .catch(e => {
+      console.error(e);
+    })
+}
+
 
 module.exports.getInformation = getInformation;
+module.exports.hideInformation = hideInformation;

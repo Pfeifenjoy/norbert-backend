@@ -42,7 +42,7 @@ var registerTriggers = function(trigger){
         mailin.on('message', function (connection, data, content) {
             fs.readFile(temp_file_path, (err,previous) => {
                 if (err) throw err;
-                var mails = JSON.parse(previous);
+                console.log(JSON.parse(previous));
                 //mails.push(JSON.stringify(data,null,4));
                 fs.writeFile(temp_file_path,JSON.stringify(data,null,4),err => {
                     if (err) console.log(err);
