@@ -23,18 +23,23 @@ router.post('/', (req, res) => {
     	});  
 });
 
-router.put("/:userId", (req, res) => {
-    let user = req.body;
-    if(req.session.authenticated){
-    req.app.core.updateUser(req.session.user, user)
-        .then(function (){
-
-            res.send('User updated.');
+router.put('/', (req, res) => {
+    let { password_old, password_new } = req.body;
+    req.app.core.authUser(req.session.user.username, password_old)
+    .then(user => {
+        req.app.core.updateUser(user.username, password_new)
+        .then(() => {
+             res.send('User updated.');
         })
-        .catch(function(){
-            res.status(500).send('Could not update user');
-        });
-    }else res.send(403).send('You need to be logged in to change your user');  
+        .catch(e => {
+            console.error(e);
+            res.status(500).send("Could not update");
+        })
+    })
+    .catch(e => {
+            console.error(e);
+            res.status(500).send("Could not update");
+    })
 });
 
 router.delete("/:userId", (req,res) => {
