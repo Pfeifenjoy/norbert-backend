@@ -144,6 +144,7 @@ class InfoManager{
 }
 
 function registerInformationTriggers(){
+    console.log("Kappa");
 	// Use a promise for synchronisation
 	var sync = Promise.resolve();
 

@@ -53,44 +53,6 @@ sync = dropbox.initDropbox();
 
 sync.then(() => {
 
-	/**
-	 * Configuration of the mail server
-	 */
-
-	var mailin = require('mailin');
-
-	mailin.start({
-		port: 1337,
-		disableWebhook: true,
-		requireAuthentication: false
-	});
-	/* Event emitted when a connection with the Mailin smtp server is initiated. */
-	mailin.on('startMessage', function(connection) {
-		/* connection = {
-		    from: 'sender@somedomain.com',
-		    to: 'someaddress@yourdomain.com',
-		    id: 't84h5ugf',
-		    authentication: { username: null, authenticated: false, status: 'NORMAL' }
-		  }
-		}; */
-		console.log(connection);
-	});
-
-	/* Event emitted after a message was received and parsed. */
-	mailin.on('message', function(connection, data, content) {
-		console.log(data);
-		mails.push(data);
-		/* Do something useful with the parsed message here.
-		 * Use parsed message `data` directly or use raw message `content`. */
-	});
-
-	mailin.on('error', function(error) {
-		console.error(error);
-	})
-
-	// End of mail server configuration
-
-
 	// Start the task scheduler
 	scheduler.start();
 
@@ -112,8 +74,8 @@ sync.then(() => {
 				console.error(err);
 				res.status(500).send("Something went wrong");
 			});
-			return app.listen(3001);
 			core.registerInformationTriggers();
+			return app.listen(3001);
 		})
 		.then(function() {
 			console.log('Server is listening at port 3001.');

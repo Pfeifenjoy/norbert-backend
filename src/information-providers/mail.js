@@ -26,15 +26,8 @@ function checkForFile(path){
 
 
 var registerTriggers = function(trigger){
-    console.log(trigger);
     var mailin = require('mailin');
     
-    
-    /*
-    var mails = [];
-    console.log('Checking for File')
-    checkForFile(temp_file_path)
-    .then(()=>{*/
         mailin.start({
           port: 1337,
           disableWebhook: true,
