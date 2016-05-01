@@ -1,10 +1,9 @@
 
-function updateTfIdf(words_str, nr_documents) {
+function updateTfIdf(wordIds, nr_documents) {
     // see: https://de.wikipedia.org/wiki/Tf-idf-Ma%C3%9F
 
-    let words = this.wordIndex_getWords(words_str);
-    let wordIds = words.then(words => words.map(w => w._id));
-    let documents = wordIds.then(ids => this.wordIndex_getDocuments(ids));
+    let words = this.wordIndex_getWordsById(wordIds);
+    let documents = this.wordIndex_getDocuments(wordIds);
 
     return Promise.all([words, documents]).then(attr => {
         let [words, docs] = attr;

@@ -14,6 +14,10 @@ import file_upload from './file-upload';
 import text_extractor from './text-extractor';
 import textp_words from './text-processing-words';
 import textp_tfidf from './text-processing-tfidf';
+import textp_stopw from './text-processing-stopwords';
+import textp_stemm from './text-processing-stemmer';
+import textp_token from './text-processing-tokenize';
+import textp from './text-processing';
 import notifications from './notification-queries';
 import search from './search-queries';
 
@@ -38,6 +42,10 @@ Object.assign(Core.prototype, file_upload);
 Object.assign(Core.prototype, text_extractor);
 Object.assign(Core.prototype, textp_words);
 Object.assign(Core.prototype, textp_tfidf);
+Object.assign(Core.prototype, textp_stopw);
+Object.assign(Core.prototype, textp_token);
+Object.assign(Core.prototype, textp_stemm);
+Object.assign(Core.prototype, textp);
 Object.assign(Core.prototype, notifications);
 Object.assign(Core.prototype, search);
 
