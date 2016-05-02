@@ -117,6 +117,7 @@ function process() {
 
     let updatedTfIdf = Promise.all([allWords, documentCount])
         .then(data => {
+            console.log('Updating Tf-Idf values.');
             let [words, docCount] = data;
             return this.updateTfIdf(words, docCount);
         });
@@ -124,4 +125,11 @@ function process() {
     return updatedTfIdf;
 }
 
+function resetDirty(){
+    let eDirt = this.db.collection('entries').update({'dirty': true}, {'$set': {'dirty': false}}, {'multi': true});
+    let iDirt = this.db.collection('information').update({'dirty': true}, {'$set': {'dirty': false}}, {'multi': true});
+    return Promise.all([eDirt, iDirt]);
+}
+
 module.exports.process = process;
+module.exports.resetDirty = resetDirty;

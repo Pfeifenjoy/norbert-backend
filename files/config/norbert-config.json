@@ -18,8 +18,7 @@
         "interval": 60000
     },
     "informationProviders": [
-        "./information-providers/icalender.js",
-        "./information-providers/dropbox.js"
+        "./information-providers/icalender.js"
     ],
     "files": {
         "storageService": "./storage-services/dropbox.js",

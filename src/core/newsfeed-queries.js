@@ -46,9 +46,12 @@ function deleteRecommendation(entryId,userId){
     })
 }
 
-function getRecommendations(userId, limit=100){
+function getRecommendations(userId, limit=10){
+    let sortby = {};
+    sortby['likelihood.' + userId] = 1;
     let cursor = this.db.collection("entries")
     .find({ $where: `this.owned_by !== "${userId}" && this.hidden_for instanceof Array && this.hidden_for.indexOf("${userId}") === -1` })
+    .sort(sortby)
     .limit(limit)
     return new Promise((resolve, reject) => {
         let recommendations = [];
@@ -60,12 +63,12 @@ function getRecommendations(userId, limit=100){
         })
     })
     .then(recommendations => recommendations.map(r => new Entry(r)))
-    .then(sortRelevance)
+    //.then(sortRelevance)
     .then(userRepresentation)
     .then(recommendations => recommendations.map(recommendation => {
         recommendation.type = "RECOMMENDATION"
         return recommendation;
-    }))
+    }));
 }
 
 function getEntries(userId){
