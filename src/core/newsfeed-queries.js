@@ -46,7 +46,7 @@ function deleteRecommendation(entryId,userId){
     })
 }
 
-function getRecommendations(userId, limit=10){
+function getRecommendations(userId, limit=100){
     let cursor = this.db.collection("entries")
     .find({ $where: `this.owned_by !== "${userId}" && this.hidden_for instanceof Array && this.hidden_for.indexOf("${userId}") === -1` })
     .limit(limit)
