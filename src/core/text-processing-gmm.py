@@ -1,33 +1,12 @@
 import numpy as np
 from sklearn import mixture
+import json
+from pprint import pprint
 
-data = np.array([
-    [ 50, 50, 0],
-    [ 51, 52, 0],
-    [ 51, 50, 0],
-    [ 50, 51, 0],
-    [ 52, 0,  4],
-    [ 51, 1,  3],
-    [ 53, 2,  2],
-    [ 54, 3,  1],
-    [  0, 0,100],
-    [ 10, 0,100],
-    [  1, 1,100],
-    ])
+with open('./files/tmp/gmm-in.json') as data_file:    
+    data = np.array(json.load(data_file))
 
-data2 = np.array([
-    [50, 50, 0],
-    [50, 40, 0],
-    [50, 30, 0],
-    [50, 20, 0],
-    [50, 10, 0],
-    [50, 00, 0],
-    ])
-
-g = mixture.GMM(n_components=3)
+g = mixture.GMM(n_components=10)
 g.fit(data)
-
-print(np.round(g.means_, 1))
-print(np.round(g.weights_, 1))
-print(np.round(g.covars_, 1))
-print(g.predict_proba(data2))
+result = g.predict_proba(data)
+print(json.dumps(result.tolist()))

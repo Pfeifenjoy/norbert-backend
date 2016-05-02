@@ -14,20 +14,24 @@ core.createCore()
 		core.importInformation()
 			.then(function(){
 				console.log("Imported  Information");
-			}).then(function(){
                 console.log("Updating word index");
                 return core.process();
             }).then(function(){
                 console.log("Updated word index");
+                console.log("Estimating recommendations.");
+                return core.gmm();
             })
             .then(() => {
                 console.log("Starting uploading files.");
-                return core.uploadFiles()
-                .then(() => {
-                    console.log("Finished uploading files.");
-                })
+                return core.uploadFiles();
             })
             .then(() => {
+                console.log("Finished uploading files.");
+                console.log("Finalizing.");
+                return core.resetDirty();
+            })
+            .then(() => {
+                console.log("Done.");
 				process.exit(0);
             })
             .catch(function(err){
