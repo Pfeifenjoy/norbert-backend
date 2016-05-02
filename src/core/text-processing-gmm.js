@@ -2,115 +2,202 @@ var fs = require('fs');
 import {exec} from 'child_process';
 import config from '../utils/configuration';
 import {ObjectID} from 'mongodb';
+import {forEachAsync} from './../utils/foreach-async';
 
-function gmm() {
+const tmpMatrixFileName = './files/tmp/gmm-in.json';
+const pythonScript = './src/core/text-processing-gmm.py';
+const pythonExe = config.get('commands.python3');
 
-    let rownums = {};
-    let matrix = [];
+class ContiguousIndex {
+    constructor(values) {
+        let valueToIndex = {};
+        let nrValues = 0;
+        let domain = [];
 
-    let rowOf = function(obj, i) {
-        let str = JSON.stringify(obj.document.id);
-        if (rownums[str] === undefined) {
-            rownums[str] = matrix.length;
-            matrix.push(Array.apply(null, Array(i)).map(x=>0));
+        for (let value of values) {
+            let key = JSON.stringify(value);
+            if (valueToIndex[key] === undefined) {
+                valueToIndex[key] = nrValues;
+                nrValues = nrValues + 1;
+                domain.push(value);
+            }
         }
-        return rownums[str];
+
+        this.nrValues = nrValues;
+        this.valueToIndex = valueToIndex;
+        this.domain = domain;
     }
 
-    let wordCount = this.db.collection('words').count();
+    indexOf(value) {
+         let str = JSON.stringify(value);
+         return this.valueToIndex[str];
+    }
+}
 
-    let word_doc = this.db.collection('words_in_documents').find({'document.type':'entries'}).toArray();
+function gmm(dataset, idColumn, featureColumn, valueColumn){
+    
+    // 1) Create the input matrix for the GMM 
 
-    let gmmDone = Promise.all([word_doc, wordCount]).then(data => {
-        let [word_doc, wordCount] = data;
-        for (let obj of word_doc) {
-            let row = rowOf(obj, wordCount);
-            let column = obj.word;
-            if (obj.tfidf){
-                matrix[row][column] = obj.tfidf;    
-            } 
+    let ids = dataset.map(obj => obj[idColumn]);
+    let idToIndex = new ContiguousIndex(ids);
+
+    let features = dataset.map(obj => obj[featureColumn]);
+    let featureToIndex = new ContiguousIndex(features);
+
+    let nrRows = idToIndex.nrValues;
+    let nrCols = featureToIndex.nrValues;
+    
+    // init the matrix with zeroes
+    let matrix = [];
+    for (let row = 0; row < nrRows; ++row) {
+        let matrixRow = [];
+        for (let col = 0; col < nrCols; ++col) {
+            matrixRow.push(0);
         }
-        if (matrix.length < 10) return null;
-        fs.writeFileSync('./files/tmp/gmm-in.json', JSON.stringify(matrix));
-        
-        let python_exe = config.get('commands.python3');
-		var python_script = './src/core/text-processing-gmm.py';
-        return new Promise((resolve, reject) => {
-            exec([python_exe, python_script].join(' '),(error, stdout, stderr) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-                let result = JSON.parse(stdout);
-                console.log(result[0]);
-                resolve(result);
-            });
+        matrix.push(matrixRow);
+    }
+
+    // Insert the data 
+    for (let datum of dataset) {
+        let row = idToIndex.indexOf(datum[idColumn]);
+        let col = featureToIndex.indexOf(datum[featureColumn]);
+        let value = datum[valueColumn] || 0;
+        matrix[row][col] = value;
+    }
+
+    // 2) Write the matrix to a file and call Scikit-Learn to do its work
+    fs.writeFileSync(tmpMatrixFileName, JSON.stringify(matrix));
+
+    let clusteringDone = new Promise((resolve, reject) => {
+        exec([pythonExe, pythonScript].join(' '),(error, stdout, stderr) => {
+            if (error) {
+                console.log('Error while executing: ', pythonExe, pythonScript);
+                console.log('Return code: ', error.code);
+                console.log('Stderr: ', stderr);
+                return reject(error);
+            }
+            let result = JSON.parse(stdout);
+            resolve(result);
         });
-        
     });
 
-    let allEntries = this.db.collection('entries').find({}).toArray();
-
-    let userPrefs = {};
-    let userCounts = {};
-
-    let asdf = Promise.all([allEntries, gmmDone]).then(data => {
-        let [entries, clusters] = data;
-
-        if (entries === null) return;
-        
-        for (let entry of entries){
-            let id = JSON.stringify(entry._id);
-            let row = rownums[id];
-            let user = entry.owned_by;
-            if (row) {
-                if (userCounts[user] == undefined) {
-                    userCounts[user] = 1;
-                    userPrefs[user] = clusters[row];
-                } else {
-                    ++userCounts[user];
-                    userPrefs[user] = userPrefs[user].map((val, ind) => val + clusters[row][ind]);
-                }
-            }
+    // 3) Convert the resulting matrix back to 'readable' objects
+    let result = clusteringDone.then(matrix => {
+        let result = [];
+        for (let id of idToIndex.domain) {
+            let row = idToIndex.indexOf(id);
+            let resultObject = {};
+            resultObject[idColumn] = id;
+            resultObject.clusters = matrix[row];
+            result.push(resultObject);
         }
+        return result;
+    });
 
-        for (let key of Object.keys(userPrefs)) {
-            userPrefs[key] = userPrefs[key].map(val => val / userCounts[key]);
-        }
+    return result;
+}
 
-        let queries = [];
+function calculateRecommendations() {
 
+    // 1) Get the data
+    let wordsInDocuments = this.db.collection('words_in_documents')
+        .find({'document.type':'entries'})
+        .toArray();
+
+    // 2) Cluster the data 
+    let clusters = wordsInDocuments.then(data => {
+        return gmm(data, 'document', 'word', 'tfidf');
+    });
+
+    // 3) Calculate for each user the interest for every cluster
+    
+    // create a map from entries to users 
+    let entries = this.getEntriesOrderedByUser();
+    let entriesToUsers = entries.then(entries => {
+        let result = {};
         for (let entry of entries) {
-            let id = JSON.stringify(entry._id);
-            let row = rownums[id];
-            let user = JSON.stringify(entry.owned_by);
-            if (row) {
-                for (let key of Object.keys(userPrefs)) {
-                    let curr_user = key;
-                    let curr_userpref = userPrefs[key];
-                    let curr_entry = clusters[row];
-                    let likelihood = curr_userpref.map((val, ind) => val * curr_entry[ind]).reduce((a,b)=>a+b,0);
-                    let query = {'where':{'_id': ObjectID(entry._id)}, 'update': {'$set':{}}};
-                    query.update['$set']['likelihood.' + curr_user] = likelihood;
-                    queries.push(query);
-                }
-            }
+            result[entry.id] = entry.owned_by;
         }
-
-        let sync = Promise.resolve();
-        for (let q of queries) {
-            sync = sync.then(() => {
-                return this.db.collection('entries').update(q.where, q.update);
-            });
-        }
-        console.log(queries);
-        return sync;
+        return result;
     });
 
-    return asdf;
+    // do the actual calculations
+    let userInterests = Promise.all([clusters, entriesToUsers])
+        .then(args => {
+            let [clusters, entriesToUsers] = args; 
+            let result = {};
+            let documentCounts = {};
 
-    
-    
+            // sum up the cluster-values for the entries of each user.
+            // and count the number of entriesfor each user.
+            for (let document of clusters) {
+                let entryid = document.document.id;
+                let userid = entriesToUsers[entryid];
+                if (result[userid] === undefined) {
+                    result[userid] = document.clusters; 
+                    documentCounts[userid] = 1;
+                } else {
+                    documentCounts[userid] = documentCounts[userid] + 1;
+                    result[userid] = result[userid].map(
+                        (val, ind) => val + document.clusters[ind]
+                    );
+                }
+            }
+
+            // normalize the interest values using the number of entries.
+            for (let userid of Object.keys(result)) {
+                result[userid] = result[userid].map(
+                    val => val / documentCounts[userid]
+                ); 
+            }
+
+            return result;
+        });
+
+    // 4 ) For each document, calculate how interested the user might be in this document based on 
+    //       - the interest of the user in the individual clusters 
+    //       - the cluster values of each entry
+
+    let likelihoods = Promise.all([clusters, userInterests])
+        .then(arg => {
+            let [clusters, interests] = arg;
+            let result = [];
+            for (let entry of clusters) {
+                for (let userid of Object.keys(interests)) {
+                    let entryClusterValues = entry.clusters;
+                    let userClusterInterests = interests[userid];
+
+                    // this basically calculates the dot product... just to give the beast a name...
+                    let likelihood = entryClusterValues.map(
+                        (val, ind) => val * userClusterInterests[ind]
+                    ).reduce(
+                        (a, b) => a + b
+                    , 0);
+
+                    result.push({
+                        'entry': entry.document.id,
+                        'user': userid,
+                        'likelihood': likelihood
+                    });
+                }
+            }
+            return result;
+        });
+
+    // 5 ) Write the result to the database.
+
+    let done = likelihoods.then(likelihoods => {
+        return forEachAsync(likelihoods, obj => {
+            let set = {};
+            set['likelihood.' + obj.user] = obj.likelihood;
+            return this.db.collection('entries').update({'_id': ObjectID(obj.entry)}, {'$set': set});
+        });
+
+    });
+
+    return done;
 }
 
 module.exports.gmm = gmm;
+module.exports.calculateRecommendations = calculateRecommendations;
+

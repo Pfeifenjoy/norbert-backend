@@ -15,7 +15,7 @@
     },
     "taskScheduler": {
         "enabled": true,
-        "interval": 60000
+        "interval": 600000
     },
     "informationProviders": [
         "./information-providers/icalender.js",
