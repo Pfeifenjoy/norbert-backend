@@ -30,6 +30,7 @@ function gmm() {
                 matrix[row][column] = obj.tfidf;    
             } 
         }
+        if (matrix.length < 10) return null;
         fs.writeFileSync('./files/tmp/gmm-in.json', JSON.stringify(matrix));
         
         let python_exe = config.get('commands.python3');
@@ -55,6 +56,8 @@ function gmm() {
 
     let asdf = Promise.all([allEntries, gmmDone]).then(data => {
         let [entries, clusters] = data;
+
+        if (entries === null) return;
         
         for (let entry of entries){
             let id = JSON.stringify(entry._id);
