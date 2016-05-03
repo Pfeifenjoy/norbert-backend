@@ -91,8 +91,6 @@ let processEntries = (data) => {
 		arrayEntries.push(d.entries);
 	});
 
-	let sync = Promise.resolve();
-
 	if (arrayEntries.length > 0) {
 		// Concat all entries
 		let allEntries = arrayEntries.reduce((previousValue, currentValue) => {
@@ -101,7 +99,46 @@ let processEntries = (data) => {
 
 		console.log("Dropbox Crawler: Processing received data... (this may take some time on first startup!)");
 
-		let progressIntervall = Math.ceil(allEntries.length * 0.1);
+
+		/*
+		let calls = [];
+
+		allEntries.forEach((item) => {
+			calls.push(evaluateEntry.bind(null, item));
+		});
+
+		let counter = 0;
+		let errorcounter = 0;
+
+		function call() {
+
+			if (calls.length > 0) {
+				return calls.pop()().then(() => {
+					counter++;
+					return call();
+				}).catch(e => {
+					console.log(e);
+					errorcounter++;
+					return call();
+				});
+			}
+
+		}
+
+		let allCalls = []
+
+		for (let i = 0; i < 100; ++i) {
+			allCalls.push(call());
+		}
+
+		return Promise.all(allCalls).then(() => {
+			console.log("Total: " + calls.length);
+			console.log("Error: " + errorcounter);
+			console.log("passed" + counter)
+		});
+		*/
+
+		/*let progressIntervall = Math.ceil(allEntries.length * 0.1);
 		let percentage = 0;
 
 		allEntries.forEach((item, index) => {
@@ -114,8 +151,9 @@ let processEntries = (data) => {
 				});
 			});
 		});
+		*/
 	}
-	return sync;
+	return Promise.resolve();
 }
 
 let initCrawler = () => {
@@ -203,9 +241,9 @@ let evaluateEntry = (entry) => {
 
 					// Object with some important information
 					let fileObject = {
-						"id": id,				// unique id for the file
-						"rev": entry[1].rev,    // unique revision id for the current file => changes if the file content change
-						"path": entry[1].path,  // stored path
+						"id": id, // unique id for the file
+						"rev": entry[1].rev, // unique revision id for the current file => changes if the file content change
+						"path": entry[1].path, // stored path
 					}
 
 					// Extract filename
@@ -281,6 +319,11 @@ let evaluateEntry = (entry) => {
  * returns revision independent id ("id:xxxxxx")
  */
 let getID = (rev) => {
+
+	if (Math.random() < 0.1) {
+		throw new Error("Random Error");
+	}
+
 	const pathURL = "/2/files/get_metadata";
 
 	// HTTP-response body
