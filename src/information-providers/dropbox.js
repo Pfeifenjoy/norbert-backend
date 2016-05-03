@@ -14,6 +14,9 @@ import {
 import {
 	File
 } from './../core/file';
+import {
+	forEachAsyncPooled
+} from '../utils/foreach-async';
 
 var https = require('https');
 var querystring = require('querystring');
@@ -99,60 +102,11 @@ let processEntries = (data) => {
 
 		console.log("Dropbox Crawler: Processing received data... (this may take some time on first startup!)");
 
-
-		/*
-		let calls = [];
-
-		allEntries.forEach((item) => {
-			calls.push(evaluateEntry.bind(null, item));
+		return forEachAsyncPooled(allEntries, 100, evaluateEntry).then((data) => {
+			console.log("Dropbox Crawler: Crawler Errors " + data[1].length);
 		});
-
-		let counter = 0;
-		let errorcounter = 0;
-
-		function call() {
-
-			if (calls.length > 0) {
-				return calls.pop()().then(() => {
-					counter++;
-					return call();
-				}).catch(e => {
-					console.log(e);
-					errorcounter++;
-					return call();
-				});
-			}
-
-		}
-
-		let allCalls = []
-
-		for (let i = 0; i < 100; ++i) {
-			allCalls.push(call());
-		}
-
-		return Promise.all(allCalls).then(() => {
-			console.log("Total: " + calls.length);
-			console.log("Error: " + errorcounter);
-			console.log("passed" + counter)
-		});
-		*/
-
-		/*let progressIntervall = Math.ceil(allEntries.length * 0.1);
-		let percentage = 0;
-
-		allEntries.forEach((item, index) => {
-			sync = sync.then(() => {
-				return evaluateEntry(item).then(() => {
-					if ((index + 1) % progressIntervall === 0) {
-						percentage += 10;
-						console.log("Dropbox Crawler: " + percentage + "% done...")
-					}
-				});
-			});
-		});
-		*/
 	}
+
 	return Promise.resolve();
 }
 
@@ -230,72 +184,68 @@ let evaluateEntry = (entry) => {
 		if (entry[1]["is_dir"] === false) {
 
 			// Get id of the file if its an interesting file
-			prom = getID(entry[1].rev).then(responseID => {
+			prom = getID(entry[1].rev, entry).then(responseID => {
 
-					// Extract id
-					let id = responseID.substring(responseID.lastIndexOf(":") + 1);
+				// Extract id
+				let id = responseID.substring(responseID.lastIndexOf(":") + 1);
 
-					let filter = {
-						"extra.id": id
-					};
+				let filter = {
+					"extra.id": id
+				};
 
-					// Object with some important information
-					let fileObject = {
-						"id": id, // unique id for the file
-						"rev": entry[1].rev, // unique revision id for the current file => changes if the file content change
-						"path": entry[1].path, // stored path
-					}
+				// Object with some important information
+				let fileObject = {
+					"id": id, // unique id for the file
+					"rev": entry[1].rev, // unique revision id for the current file => changes if the file content change
+					"path": entry[1].path, // stored path
+				}
 
-					// Extract filename
-					let filename = entry[1].path.substring(entry[1].path.lastIndexOf("/") + 1);
+				// Extract filename
+				let filename = entry[1].path.substring(entry[1].path.lastIndexOf("/") + 1);
 
-					// Create new file
-					let myFile = new File();
-					// set location of the file
-					myFile.setToRemoteFile(fileObject, filename);
+				// Create new file
+				let myFile = new File();
+				// set location of the file
+				myFile.setToRemoteFile(fileObject, filename);
 
-					// Create new document component
-					let docu = createComponent('components-document');
-					// set file to document
-					docu.file = myFile;
+				// Create new document component
+				let docu = createComponent('components-document');
+				// set file to document
+				docu.file = myFile;
 
-					// Compare if id exists in DB
-					infoManager.findOne(filter).then(data => {
-						// if ID exists in DB
-						let storedInformation = new Information(data);
+				// Compare if id exists in DB
+				infoManager.findOne(filter).then(data => {
+					// if ID exists in DB
+					let storedInformation = new Information(data);
 
-						if (storedInformation.title != filename || storedInformation.extra != fileObject) {
-							// Something changed so upadate it
-							storedInformation.title = filename;
-							storedInformation.extra = fileObject;
-							storedInformation.components = [
-								docu
-							];
-
-							// Update current DB status for the file
-							return infoManager.update(storedInformation);
-						}
-
-						return Promise.resolve();
-
-
-					}).catch(err => {
-						// Else create new Entry			
-						let info = new Information();
-						info.title = filename;
-						info.extra = fileObject;
-						info.components = [
+					if (storedInformation.title != filename || storedInformation.extra != fileObject) {
+						// Something changed so upadate it
+						storedInformation.title = filename;
+						storedInformation.extra = fileObject;
+						storedInformation.components = [
 							docu
 						];
 
-						// Insert the Information into the database.
-						return infoManager.insert(info);
-					});
+						// Update current DB status for the file
+						return infoManager.update(storedInformation);
+					}
 
-				})
-				.catch(error => {
-					console.log(error);
+					return Promise.resolve();
+
+
+				}).catch(err => {
+					// Else create new Entry			
+					let info = new Information();
+					info.title = filename;
+					info.extra = fileObject;
+					info.components = [
+						docu
+					];
+
+					// Insert the Information into the database.
+					return infoManager.insert(info);
 				});
+			});
 		}
 	}
 	// metadata is null
@@ -318,11 +268,7 @@ let evaluateEntry = (entry) => {
  * needs: revision of the file
  * returns revision independent id ("id:xxxxxx")
  */
-let getID = (rev) => {
-
-	if (Math.random() < 0.1) {
-		throw new Error("Random Error");
-	}
+let getID = (rev, entry) => {
 
 	const pathURL = "/2/files/get_metadata";
 
@@ -342,6 +288,7 @@ let getID = (rev) => {
 		}
 	};
 	return new Promise((resolve, reject) => {
+
 		// Set up the request
 		var req = https.request(post_options, (res) => {
 			res.setEncoding('utf8');
@@ -359,7 +306,10 @@ let getID = (rev) => {
 					// retun id
 					resolve(JSON.parse(response).id);
 				} else {
-					reject(JSON.parse(response));
+					reject({
+						entry: entry,
+						error: JSON.parse(response)
+					});
 				}
 
 			});
@@ -367,7 +317,10 @@ let getID = (rev) => {
 		});
 
 		req.on('error', (e) => {
-			reject("HTTP-error:" + e);
+			reject({
+				entry: entry,
+				error: e
+			});
 		});
 
 		// Fire the http-request
