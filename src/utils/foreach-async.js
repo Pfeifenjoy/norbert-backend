@@ -25,4 +25,28 @@ function forEachAsync(data, promiseGenerator) {
     return sync;
 }
 
+function forEachAsyncPooled(data, poolSize, promiseGenerator) {
+    let workers = [];
+    let done = 0;
+    let poolWorker = function(previousResults){
+        if (data.length == done) {
+            return Promise.resolve([previousResults]);
+        } else {
+            let datum = data[done];
+            done = done + 1;
+            return oneAsync(datum, promiseGenerator, [previousResults])
+                .then(result => poolWorker(result));
+        }
+    };
+    for (let i=0; i<poolSize; ++i) {
+        workers.push(poolWorker([[], []]));
+    }
+    let results = Promise.all(workers).then(resultsArray => {
+        return resultsArray.reduce(
+            (a, b) => [a[0].concat(b[0]), a[1].concat([b[1]])]
+        );
+    });
+    return results;
+}
+
 module.exports.forEachAsync =forEachAsync;
