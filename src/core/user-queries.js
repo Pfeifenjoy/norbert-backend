@@ -21,7 +21,7 @@ function updateUser(username, password_new){
 }
 
 function deleteUser(username){
-	console.log(userId);
+	console.log(username);
 	return this.db.collection("users").remove({"username":username});
 }
 
