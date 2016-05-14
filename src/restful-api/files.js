@@ -5,6 +5,7 @@ import { Router } from "express";
 import Busboy from "busboy";
 import { File, states, buildTempFileName } from "../core/file";
 import fs from 'fs';
+import scheduler from '../task-scheduler/scheduler';
 
 let router = new Router;
 
@@ -85,6 +86,9 @@ router.post("/", (req, res) => {
             done.catch(() => {
                 res.status(500).send('Error');
             });
+
+            // trigger the scheduler to upload the document to dropbox.
+            scheduler.trigger();
             
         } else {
             res.status(400).send('Input was incomplete');
