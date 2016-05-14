@@ -1,3 +1,7 @@
+#
+# Author: Tobias Dorra
+#
+
 import numpy as np
 from sklearn import mixture
 import json
@@ -5,9 +9,11 @@ from pprint import pprint
 
 nr_clusters = 10
 
+# open the file with the data that should be clustered
 with open('./files/tmp/gmm-in.json') as data_file:    
     data = np.array(json.load(data_file))
 
+# Do the clustering (if there is enough data)
 nr_samples = data.shape[0]
 
 if nr_samples == 0:
@@ -23,5 +29,5 @@ else:
     result = g.predict_proba(data)
     result_list = result.tolist()
 
+# Output the result
 print(json.dumps(result_list))
-

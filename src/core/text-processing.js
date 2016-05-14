@@ -1,3 +1,7 @@
+/**
+ * @author: Tobias Dorra
+ */
+
 import {forEachAsync} from '../utils/foreach-async';
 
 function toIds(entries, type) {

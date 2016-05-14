@@ -1,3 +1,6 @@
+/**
+ * @author: Tobias Dorra
+ */
 
 var loadPlugins = function (plugins) {
 	// sync each information provider

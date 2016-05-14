@@ -1,3 +1,7 @@
+/**
+ * @author: Tobias Dorra
+ */
+
 import {Component} from './../core/component';
 
 class NotificationComponent extends Component{

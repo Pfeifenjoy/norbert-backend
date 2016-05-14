@@ -1,3 +1,6 @@
+/**
+ * @author: Tobias Dorra
+ */
 
 function updateTfIdf(wordIds, nr_documents) {
     // see: https://de.wikipedia.org/wiki/Tf-idf-Ma%C3%9F

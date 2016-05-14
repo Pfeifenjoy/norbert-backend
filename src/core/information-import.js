@@ -1,6 +1,7 @@
 /**
  * @author Tobias Dorra
  */
+ 
 import {Information} from './information';
 import config from './../utils/configuration';
 import {loadPlugins} from '../utils/load-plugins';

@@ -1,6 +1,7 @@
 /**
- * @author Tobias Dorra
+ * @author Arwed Mett, Tobias Dorra
  */
+
 import { loadComponent } from './component';
 import { states } from './file';
 import { ObjectId } from "mongodb";

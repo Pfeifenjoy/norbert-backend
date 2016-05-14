@@ -1,4 +1,8 @@
 /**
+ * @author: Tobias Dorra
+ */
+
+/**
  * Clones a value.
  * A deep copy will be performed on the given value. The copy will be returned.
  */
