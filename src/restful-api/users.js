@@ -45,6 +45,7 @@ router.put('/', (req, res) => {
 router.delete("/", (req,res) => {
     req.app.core.deleteUser(req.session.user.username)
         .then(function(){
+            req.session = null;
             res.send('User ' + req.session.user.username + ' was succesfully deleted.');
         })
         .catch(function(){
