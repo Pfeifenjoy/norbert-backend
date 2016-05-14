@@ -26,11 +26,12 @@ function userRepresentation(objects) {
     return objects.map(object => object.userRepresentation);
 }
 
-function getNewsfeed(userId){
+function getNewsfeed(userId, filter=50){
 	let promises = [this.getEntries(userId), this.getInformation(userId)];
     return Promise.all(promises)
     .then(([a, b]) => a.concat(b))
     .then(sortRelevance)
+    .then((a) => a.slice(1,filter))
     .then(userRepresentation)
 }
 

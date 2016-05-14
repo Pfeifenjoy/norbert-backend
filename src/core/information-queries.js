@@ -8,7 +8,7 @@ import {ObjectId} from 'mongodb';
 
 function getInformation(userID){
 	let query = {hidden_for : {$ne : userID}};
-	let InformationCursor = this.db.collection('information').find(query).limit(10);
+	let InformationCursor = this.db.collection('information').find(query);
 	console.log('infos');
    	let dbResult = InformationCursor.toArray();
    	let result = dbResult.then(array => {
