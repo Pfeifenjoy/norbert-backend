@@ -55,10 +55,18 @@ function hideInformation(userID, informationID){
     })
 }
 
+function updateInformation(info) {
+  info.dirty = true;
+  let data = info.dbRepresentation;
+  let filter = {'_id': info.id};
+  return this.information.replaceOne(filter, data);
+}
+
 
 module.exports.getInformation = getInformation;
 module.exports.findDirtyInformation = findDirtyInformation;
 module.exports.findDeletedInformation = findDeletedInformation;
 module.exports.getInformationCount = getInformationCount;
 module.exports.hideInformation = hideInformation;
+module.exports.updateInformation = updateInformation;
 

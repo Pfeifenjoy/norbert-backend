@@ -65,6 +65,10 @@ var loadComponents = function(dbObjects) {
 
 /**
  * Creates a new Component
+ * 
+ * type: the component type to use
+ *
+ * returns: the newly created component
  */
 var createComponent = function(type, generated=false) {
     var components = getComponentPlugins();
