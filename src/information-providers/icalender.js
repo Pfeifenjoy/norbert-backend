@@ -50,7 +50,7 @@ function getIcalEntry(value){
 	
 	var result = [];
 	
-	//start ical at ical[1] to skip the definiton part of the ical; get all infortion to on entry without defitions at the beginning of each line
+	//start ical at ical[1] to skip the definiton part of the ical; get all information to on entry without defitions at the beginning of each line
 	for (var i = 1; i< ical.length; i++){
 		var comp = createComponent('components-description');
 		var notification = null;
