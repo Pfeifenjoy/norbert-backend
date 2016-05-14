@@ -1,3 +1,4 @@
+import {forEachAsync} from '../utils/foreach-async';
 
 function toIds(entries, type) {
     let documentIds = entries.map(e => {
@@ -35,16 +36,24 @@ function updateSingleDocumentInIndex(entry, type) {
         let text = result[0] + ' ' + result[0] + ' ' + result[0] + ' ' + result[0] + ' '
                  + result[1] + ' ' + result[1] + ' '
                  + result[2];
+        console.log('     extracted text');
         let tokens = this.tokenize(text);        
+        console.log('     tokenized. ', tokens.length, ' tokens.');
         let filtered = tokens.filter(t => !this.isStopWord(t));
+        console.log('     eliminated stopwords. ', filtered.length, ' tokens left.');
         let stemms = filtered.map(word => this.stemm(word));
+        console.log('     stemmed words. ');
         return stemms;
     });
 
     let [id] = toIds([entry], type);
 
     let updated = wordsStr.then(stemms => {
-        return this.wordIndex_updateDocument(id, stemms);
+        console.log('     updating index. ');
+        return this.wordIndex_updateDocument(id, stemms)
+            .then(() => {
+                console.log('  Document ok: ', id); 
+            });
     });
        
     console.log('  Document: ', id);
@@ -57,10 +66,9 @@ function updateInIndex(entries, type) {
 
     let oldWords = getCurrentWordIds.bind(this)(entries, type);
 
-    let sync = oldWords;
-    for (let entry of entries) {
-        sync = sync.then(() => updateSingleDocumentInIndex.bind(this)(entry, type));
-    }
+    let sync = forEachAsync(entries, entry => {
+        return updateSingleDocumentInIndex.bind(this)(entry, type);
+    });
 
     let newWords = sync.then(() => {
          return getCurrentWordIds.bind(this)(entries, type);
@@ -126,9 +134,13 @@ function process() {
 }
 
 function resetDirty(){
-    let eDirt = this.db.collection('entries').update({'dirty': true}, {'$set': {'dirty': false}}, {'multi': true});
-    let iDirt = this.db.collection('information').update({'dirty': true}, {'$set': {'dirty': false}}, {'multi': true});
-    return Promise.all([eDirt, iDirt]);
+    let eDirt = this.db.collection('entries').updateMany({'dirty': true}, {'$set': {'dirty': false}});
+    let iDirt = this.db.collection('information').updateMany({'dirty': true}, {'$set': {'dirty': false}});
+    return Promise.all([eDirt, iDirt]).then(() => {
+        let eDel = this.db.collection('entries').remove({'deleted': true});
+        let iDel = this.db.collection('information').remove({'deleted': true});
+        return Promise.all([eDel, iDel]);
+    });
 }
 
 module.exports.process = process;

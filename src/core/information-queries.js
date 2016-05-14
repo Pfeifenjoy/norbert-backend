@@ -21,7 +21,7 @@ function getInformation(userID){
 
 function findDirtyInformation(){
     return this.db.collection("information")
-        .find({'dirty': true, 'deleted': false})
+        .find({'dirty': {'$eq': true}, 'deleted': {'$eq': false}})
         .toArray()
         .then(data => {
             return data.map(e => new Information(e));
@@ -30,7 +30,7 @@ function findDirtyInformation(){
 
 function findDeletedInformation(){
     return this.db.collection("information")
-        .find({'dirty': true, 'deleted': true})
+        .find({'dirty': {'$eq': true}, 'deleted': {'$eq': true}})
         .toArray()
         .then(data => {
             return data.map(e => new Information(e));

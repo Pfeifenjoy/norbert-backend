@@ -19,7 +19,7 @@ core.createCore()
             }).then(function(){
                 console.log("Updated word index");
                 console.log("Estimating recommendations.");
-                return core.gmm();
+                return core.calculateRecommendations();
             })
             .then(() => {
                 console.log("Starting uploading files.");

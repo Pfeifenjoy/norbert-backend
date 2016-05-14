@@ -5,6 +5,7 @@ import {Information} from './information';
 import config from './../utils/configuration';
 import {loadPlugins} from '../utils/load-plugins';
 import {trigger} from './../task-scheduler/scheduler';
+import {forEachAsync} from './../utils/foreach-async';
 
 /**
  * Loads all information providers and imports
@@ -12,25 +13,25 @@ import {trigger} from './../task-scheduler/scheduler';
  */
 var importInformation = function() {
 
-	// Use a promise for synchronisation
-	var sync = Promise.resolve();
-
 	// get the providers from the config file.
 	var providerConfig = config.get('informationProviders') || [];
 	var providers = loadPlugins(providerConfig);
 
 	// sync each information provider
-	for (let name of Object.keys(providers)) {
+    let done = forEachAsync(Object.keys(providers), name => {
+        console.log('Syncing information: ', name);
 		let provider = providers[name];
-		sync = sync.then(() => {
-            console.log('Started sync: ', name);
-			let dbAccess = new InfoManager(name, this);
-			return provider.sync(dbAccess);
-		});
-	}
+		let dbAccess = new InfoManager(name, this);
+		return provider.sync(dbAccess)
+            .then(() => {
+                console.log('Synced information: ', name);
+            }).catch(() => {
+                console.log('Sync failed for: ', name);
+            });
+    })
 
 	// return the promise
-	return sync;
+	return done;
 };
 
 /**
@@ -41,7 +42,8 @@ var enhanceFilter = function(filter, provider){
     return {
         '$and': [
             filter,
-            {'provider': provider}
+            {'provider': provider},
+            {'deleted': false}
         ]};
 };
 
@@ -83,7 +85,7 @@ class InfoManager{
      */
     remove(filter){
         var actualFilter = enhanceFilter(filter, this.provider);
-		return this.information.remove(actualFilter);
+		return this.information.updateMany(actualFilter, {'$set': {'deleted': true}});
     }
 
     /**
@@ -144,29 +146,25 @@ class InfoManager{
 }
 
 function registerInformationTriggers(){
-	// Use a promise for synchronisation
-	var sync = Promise.resolve();
-
 	// get the providers from the config file.
 	var providerConfig = config.get('informationProviders') || [];
 	var providers = loadPlugins(providerConfig);
 
-	// call the registerTriggers method for each provider.
-	for (let name of Object.keys(providers)) {
+	// sync each information provider
+    let done = forEachAsync(Object.keys(providers), name => {
 		let provider = providers[name];
-		sync = sync.then(() => {
-            if (provider.registerTriggers !== undefined) {
-                console.log('Registering triggers for: ', name);
-                return provider.registerTriggers(trigger);
-            } else {
-                return 'Nothing to do.';
-            }
-		});
-	}
+        if (provider.registerTriggers !== undefined) {
+            console.log('Registering triggers for: ', name);
+            return provider.registerTriggers(trigger)
+                .then(() => {
+                    console.log('Registered triggers for: ', name);
+                }).catch(() => {
+                    console.log('Registration of triggers failed for: ', name);
+                });
+        }
+    });
 
-	// return the promise
-	return sync;
-     
+    return done;
 }
 
 module.exports.importInformation = importInformation;

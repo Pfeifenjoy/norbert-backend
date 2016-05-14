@@ -20,9 +20,9 @@ function updateUser(username, password_new){
 	return this.db.collection("users").update({"username" : username}, {$set : {"password" : password_new}} );
 }
 
-function deleteUser(userId){
-	console.log(userId);
-	return this.db.collection("users").remove({"username":userId});
+function deleteUser(username){
+	console.log(username);
+	return this.db.collection("users").remove({"username":username});
 }
 
 function authUser(username, password){

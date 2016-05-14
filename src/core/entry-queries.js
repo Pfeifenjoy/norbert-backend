@@ -61,6 +61,14 @@ export function getEntryCount(){
      return this.db.collection('entries').count();
 }
 
+export function getEntriesOrderedByUser(){
+     return this.db.collection('entries')
+         .find({'deleted': false})
+         .sort({'owned_by': 1})
+         .toArray()
+         .then(objects => objects.map(o => new Entry(o)));
+}
+
 export default {
     createEntry,
     getEntry,
@@ -68,6 +76,7 @@ export default {
     deleteEntry,
     findDirtyEntries,
     findDeletedEntries,
-    getEntryCount
+    getEntryCount,
+    getEntriesOrderedByUser
 }
 

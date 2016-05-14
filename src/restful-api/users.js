@@ -42,18 +42,14 @@ router.put('/', (req, res) => {
     })
 });
 
-router.delete("/:userId", (req,res) => {
-    let userId = req.params.userId;
-    if(req.session.user.id === userId){
-    req.app.core.deleteUser(userId)
+router.delete("/", (req,res) => {
+    req.app.core.deleteUser(req.session.user.username)
         .then(function(){
-            res.send('User ' + userId + ' was succesfully deleted.');
+            res.send('User ' + req.session.user.username + ' was succesfully deleted.');
         })
         .catch(function(){
-            res.status(500).send('User ' + userId + ' could not be deleted.');
-        });
-    }else res.status(403).send('You can not delete other users');
-        
+            res.status(500).send('User ' + req.session.user.username + ' could not be deleted.');
+        });   
 });
 
 
