@@ -38,7 +38,7 @@ gulp.task("frontend", () => {
                    .pipe(gulp.dest(path.join(dirs.dest, "frontend/build")));
 })
 
-gulp.task("build", ["js-production"]);
+gulp.task("build", ["js-production", "frontend", "index"]);
 
 gulp.task("run-batch", function(cb){
     var proc = child_process.spawn("node", [dirs.batchScript]);
@@ -67,9 +67,9 @@ gulp.task("js", () => {
 });
 
 gulp.task("js-production", () => {
-    return gulp.src(path.join(dirs.src, "**/*.js", "!src/frontend/**/*"))
+    return gulp.src([path.join(dirs.src, "**/*.js"), "!src/frontend/**/*"], {base: dirs.src})
     .pipe(babel())
-    .pipe(gulp.dest(dirs.dest));
+    .pipe(gulp.dest(dirs.dest))
 });
 
 gulp.task("watch", () => {
