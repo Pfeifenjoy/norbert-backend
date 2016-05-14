@@ -33,10 +33,11 @@ router.put("/:entryId", (req, res) => {
     .then(entry => {
         if(entry.owned_by = req.session.user.id) {
             let {title, tags, components} = req.body;
+            components = entry.components.map(c => c.dbRepresentation).concat([components.pop()]); //TODO workaround :D
             entry.userRepresentation = {
                 title: title || entry.title,
                 tags: tags || entry.tags,
-                components: components || entry.components
+                components
             }
             return req.app.core.updateEntry(entry);
         }

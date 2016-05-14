@@ -18,8 +18,7 @@
         "interval": 600000
     },
     "informationProviders": [
-        "./information-providers/icalender.js",
-        "./information-providers/dropbox.js"
+        "./information-providers/icalender.js"
     ],
     "files": {
         "storageService": "./storage-services/dropbox.js",
@@ -28,7 +27,8 @@
     "components": [
         "./components/description.js",
         "./components/document.js",
-        "./components/notification.js"
+        "./components/notification.js",
+        "./components/task.js"
     ],
     "dropbox": {
         "uid": "558779514",

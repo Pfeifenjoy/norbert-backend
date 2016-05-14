@@ -26,6 +26,16 @@ function uploadFiles() {
         .then(finish, finish);
 }
 
+function saveAll(docs) {
+    docs.forEach(doc => {
+        let _id = ObjectId(doc._id);
+        delete doc._id;
+        this.collection.update(
+            { _id },
+            doc);
+    });
+}
+
 function uploadCursorDocuments(cursor) {
     return new Promise((resolve, reject) => {
         let uploads = [];
@@ -33,18 +43,21 @@ function uploadCursorDocuments(cursor) {
         cursor.each((err, doc) => {
             if(err) console.error(err);
             else if(!doc) {
-                return Promise.all(uploads)
-                .then(() => {
-                    allDocuments.forEach(doc => {
-                        let _id = ObjectId(doc._id);
-                        delete doc._id;
-                        this.collection.update(
-                            { _id },
-                            doc);
-                    });
+                let count = 0;
+                if(uploads.length === 0) resolve();
+                uploads.forEach(upload => {
+                    upload.then(() => {
+                        if(++count === uploads.length) {
+                            resolve(saveAll.bind(this)(allDocuments))
+                        }
+                    })
+                    .catch(e => {
+                        console.warn(e);
+                        if(++count === allDocuments.length) {
+                            resolve(saveAll.bind(this)(allDocuments))
+                        }
+                    })
                 })
-                .then(resolve)
-                .catch(reject);
             }
             else {
                 let { components } = doc;
