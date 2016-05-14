@@ -1,3 +1,7 @@
+/**
+ * @author: Tobias Dorra
+ */
+
 import {spawn} from 'child_process';
 import fs from 'fs';
 

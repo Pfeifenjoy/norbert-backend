@@ -1,4 +1,8 @@
 /**
+ * @author: Tobias Dorra
+ */
+
+/**
  * Compares two strings a and b. 
  *
  * Returns:

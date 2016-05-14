@@ -1,3 +1,7 @@
+/**
+ * @author: Tobias Dorra
+ */
+
 function oneAsync(datum, promiseGenerator, previousResults) {
     let [previousSuccess, previousFail] = previousResults;
 

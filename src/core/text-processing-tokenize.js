@@ -1,3 +1,6 @@
+/**
+ * @author: Tobias Dorra
+ */
 
 /**
  * Tokenizes a string into its words.

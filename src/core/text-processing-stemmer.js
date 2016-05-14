@@ -1,3 +1,6 @@
+/**
+ * @author: Tobias Dorra
+ */
 
 function findFirst(word, search, start = 0) {
     for (let it = start; it < word.length; ++it) {
@@ -137,7 +140,7 @@ function stemm(word) {
         }
     }
 
-    // finalie
+    // finalize
     word = word.toLowerCase();
     word = word.replace(/ä/g, 'a');
     word = word.replace(/ö/g, 'o');
