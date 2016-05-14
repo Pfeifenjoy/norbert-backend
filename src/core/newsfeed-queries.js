@@ -9,20 +9,23 @@ import assert from "assert";
 
 //Get the relevance of the NewsfeedObject, if there is a notification component, use either the notification date or the createdOn date, whichever is closer to the current date
 function getRelevance(newsfeedObject) {
-    return [newsfeedObject.createdAt]
-    .concat(newsfeedObject.components
-     .filter(c => { return c && c.type === "components-notification" })
-     .map(c => c.data.date)
-    )
-    .map(time => Math.abs(Date.now() - time))
-    .reduce((a, b) => Math.min(a, b))
+    let notifications = newsfeedObject.notifications;
+    if (newsfeedObject.showOnCreation === undefined || newsfeedObject.showOnCreation === true) {
+        let createdAt = newsfeedObject.createdAt;
+        notifications.push(createdAt);
+    }
+    let now = Date.now();
+
+    return notifications
+        .map(date => Math.abs(date - now))
+        .reduce((a, b) => Math.min(a, b), Infinity);
 }
 
 //Sort an Array of NewsfeedObjects according to their relevance
 function sortRelevance(objects) {
     return objects.sort((a, b) => {
         return getRelevance(a) - getRelevance(b);
-    })
+    });
 }
 
 function userRepresentation(objects) {
@@ -33,10 +36,10 @@ function userRepresentation(objects) {
 function getNewsfeed(userId, filter=50){
 	let promises = [this.getEntries(userId), this.getInformation(userId)];
     return Promise.all(promises)
-    .then(([a, b]) => a.concat(b))
-    .then(sortRelevance)
-    .then((a) => a.slice(1,filter))
-    .then(userRepresentation)
+        .then(([a, b]) => a.concat(b))
+        .then(sortRelevance)
+        .then((a) => a.slice(1,filter))
+        .then(userRepresentation);
 }
 
 //Delete a recommendation, the user will not get that recommendation again
@@ -75,23 +78,6 @@ function getRecommendations(userId, limit=10){
     }));
 }
 
-
-//Return all entries of this specific user
-function getEntries(userId){
-	let query = {owned_by : userId};
-   	let entryCursor = this.db.collection('entries').find(query);
-   	console.log('entries');
-   	let dbResult = entryCursor.toArray();
-   	let result = dbResult.then(array => {
-       return array
-       .filter(e => !e.deleted)
-       .map(e => new Entry(e));
-   	});
-   	return result;
-}
-
-
-module.exports.getEntries = getEntries;
 module.exports.getNewsfeed = getNewsfeed;
 module.exports.deleteRecommendation = deleteRecommendation;
 module.exports.getRecommendations = getRecommendations;

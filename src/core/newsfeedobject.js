@@ -98,7 +98,7 @@ class NewsFeedObject {
             component => component.getNotifications()
         ).reduce(
             (a, b) => a.concat(b)
-        );
+        , []);
         return result;
     }
 

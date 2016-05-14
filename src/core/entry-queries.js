@@ -5,7 +5,7 @@
 import { ObjectId } from "mongodb";
 import { Entry } from "./entry";
 
-export function createEntry(entry) {
+function createEntry(entry) {
     let data = entry.dbRepresentation;
     return this.db.collection("entries").insertOne(data)
         .then(cursor => {
@@ -20,7 +20,18 @@ function getEntry(id) {
         });
 }
 
-export function updateEntry(entry) {
+//Return all entries of this specific user
+function getEntries(userId){
+    let query = {owned_by : userId, deleted: false};
+    let entryCursor = this.db.collection('entries').find(query);
+    let dbResult = entryCursor.toArray();
+    let result = dbResult.then(data => {
+       return data.map(e => new Entry(e));
+    });
+    return result;
+}
+
+function updateEntry(entry) {
     entry.dirty = true;
     let data = entry.dbRepresentation;
     let id = entry.id;
@@ -34,12 +45,12 @@ export function updateEntry(entry) {
     });
 }
 
-export function deleteEntry(entry){
+function deleteEntry(entry){
     entry.deleted = true;
     return updateEntry.bind(this)(entry);
 }
 
-export function findDirtyEntries(){
+function findDirtyEntries(){
     return this.db.collection("entries")
         .find({'dirty': true, 'deleted': false})
         .toArray()
@@ -48,20 +59,20 @@ export function findDirtyEntries(){
         });
 }
 
-export function findDeletedEntries(){
+function findDeletedEntries(){
     return this.db.collection("entries")
-        .find({'dirty': true, 'deleted': true})
+        .find({'deleted': true})
         .toArray()
         .then(data => {
             return data.map(e => new Entry(e));
         });
 }
 
-export function getEntryCount(){
+function getEntryCount(){
      return this.db.collection('entries').count();
 }
 
-export function getEntriesOrderedByUser(){
+function getEntriesOrderedByUser(){
      return this.db.collection('entries')
          .find({'deleted': false})
          .sort({'owned_by': 1})
@@ -69,14 +80,15 @@ export function getEntriesOrderedByUser(){
          .then(objects => objects.map(o => new Entry(o)));
 }
 
-export default {
+module.exports = {
     createEntry,
     getEntry,
+    getEntries,
     updateEntry,
     deleteEntry,
     findDirtyEntries,
     findDeletedEntries,
     getEntryCount,
     getEntriesOrderedByUser
-}
+};
 

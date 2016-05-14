@@ -77,7 +77,7 @@ function getIcalEntry(value){
 			comp.text += 'Beginn: '+day+'.'+month+'.'+year+' '+hours+':'+min+'Uhr\n';
 			
 			//Get a Timestamp to sort the entries by date
-			var notification = createComponent('components-notification');
+			notification = createComponent('components-notification');
 			var date = new Date(year, month, day, hours, min);
 			var timestamp = date.getTime();
 			notification.date = timestamp;
@@ -88,12 +88,12 @@ function getIcalEntry(value){
 		
 		var end = getEnd(ical[i]);
 		if( end != null){
-		var year = end[1];
-		var month = end[2];
-		var day = end[3];
-		var hours = end[4];
-		var min = end[5];
-		comp.text += 'Ende: '+day+'.'+month+'.'+year+' '+hours+':'+min+'Uhr\n';
+			var year = end[1];
+			var month = end[2];
+			var day = end[3];
+			var hours = end[4];
+			var min = end[5];
+			comp.text += 'Ende: '+day+'.'+month+'.'+year+' '+hours+':'+min+'Uhr\n';
 		}
 		
 		if(notification == null){
@@ -103,6 +103,10 @@ function getIcalEntry(value){
 			info.components = [comp,notification];
 			
 		}
+		
+		// the information is important when the date takes place, but not when it is indexed.
+		info.showOnCreation = false;
+
 		result = result.concat([info]);
 		
 	}

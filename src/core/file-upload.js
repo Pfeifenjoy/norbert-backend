@@ -54,17 +54,26 @@ function uploadFiles() {
 function uploadNewsfeedObjectFiles(newsfeedObject) {
 
     // get the files
-    let files = newsfeedObject.components
+    let components = newsfeedObject.components;
+    let files = components
         .map(component => component.getFiles())
         .reduce((a, b) => a.concat(b), []);
 
     // upload all files
-    let result = forEachAsync(files, file => {
+    let uploaded = forEachAsync(files, file => {
         return file.upload()
     });
 
+    // save
+    // the entries of the files array are references to the actual file object in the components array.
+    // however, the components array is just a (deep) copy of the actual components array in the newsfeed object.
+    let saved = uploaded.then(() => {
+        newsfeedObject.components = components;
+        return newsfeedObject;
+    });
+
     // return a promise.
-    return result;
+    return saved;
 }
 
 /**
@@ -86,8 +95,9 @@ function uploadNewsfeedObjectsFiles(newsfeedObjects) {
     });
 
     // return a promise with the changed entries
-    return uploadCompleted.then(() => {
-        return newsfeedObjects;
+    return uploadCompleted.then(data => {
+        let [success, fail] = data;
+        return success;
     });
 }
 

@@ -12,13 +12,13 @@ router.get('/', (req,res) =>{
 		filter = undefined;
 	}
     req.app.core.getNewsfeed(req.session.user.id, filter)
-    .then(newsfeed => {
-        res.json(newsfeed)
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).send("could not generate newsfeed.");
-    });
+        .then(newsfeed => {
+            res.json(newsfeed)
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).send("could not generate newsfeed.");
+        });
 })
 
 module.exports = router;
