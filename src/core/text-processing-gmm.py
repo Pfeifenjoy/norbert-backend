@@ -20,7 +20,7 @@ if nr_samples == 0:
     result_list = []
 elif nr_samples <= nr_clusters:
     result = np.zeros((nr_samples, nr_clusters))
-    for i in range(nr_clusters):
+    for i in range(nr_samples):
         result[i, i] = 1
     result_list = result.tolist()
 else:
