@@ -41,5 +41,6 @@
     "commands": {
         "pdftotext": "pdftotext",
         "python3": "python"
-    }
+    },
+    "port": 4000
 }
