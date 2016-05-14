@@ -6,6 +6,8 @@ import { Entry } from "./entry";
 import { ObjectId } from "mongodb";
 import assert from "assert";
 
+
+//Get the relevance of the NewsfeedObject, if there is a notification component, use either the notification date or the createdOn date, whichever is closer to the current date
 function getRelevance(newsfeedObject) {
     return [newsfeedObject.createdAt]
     .concat(newsfeedObject.components
@@ -16,6 +18,7 @@ function getRelevance(newsfeedObject) {
     .reduce((a, b) => Math.min(a, b))
 }
 
+//Sort an Array of NewsfeedObjects according to their relevance
 function sortRelevance(objects) {
     return objects.sort((a, b) => {
         return getRelevance(a) - getRelevance(b);
@@ -26,6 +29,7 @@ function userRepresentation(objects) {
     return objects.map(object => object.userRepresentation);
 }
 
+//Build the newsfeed by fetching entries and information, then merging, sorting and filtering them
 function getNewsfeed(userId, filter=50){
 	let promises = [this.getEntries(userId), this.getInformation(userId)];
     return Promise.all(promises)
@@ -35,9 +39,7 @@ function getNewsfeed(userId, filter=50){
     .then(userRepresentation)
 }
 
-
-
-
+//Delete a recommendation, the user will not get that recommendation again
 function deleteRecommendation(entryId,userId){
     return this.getEntry(entryId)
     .then(entry => {
@@ -47,6 +49,7 @@ function deleteRecommendation(entryId,userId){
     })
 }
 
+//Get the recommended Entries for this user
 function getRecommendations(userId, limit=10){
     let sortby = {};
     sortby['likelihood.' + userId] = 1;
@@ -72,6 +75,8 @@ function getRecommendations(userId, limit=10){
     }));
 }
 
+
+//Return all entries of this specific user
 function getEntries(userId){
 	let query = {owned_by : userId};
    	let entryCursor = this.db.collection('entries').find(query);
