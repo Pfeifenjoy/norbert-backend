@@ -26,8 +26,8 @@ var importInformation = function() {
 		return provider.sync(dbAccess)
             .then(() => {
                 console.log('Synced information: ', name);
-            }).catch(() => {
-                console.log('Sync failed for: ', name);
+            }).catch((e) => {
+                console.log('Sync failed for: ', name, ' - ', e);
             });
     })
 

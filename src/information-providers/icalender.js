@@ -3,6 +3,7 @@ import {ObjectID} from 'mongodb';
 import {createComponent} from './../core/component';
 import {Information} from './../core/information';
 var request = require("request");
+import {forEachAsync} from './../utils/foreach-async';
 
 //regular Expressions for "Begin:Vevent", "Location:", "Summary", "DtStart:" and "DTEnde:"
 var beginV = /begin:vevent$/gmi;
@@ -20,28 +21,67 @@ var options = {
 }
 
 function getAllEntries(infoManager){
-	return new Promise((accept, reject) => {
-		
+
+	let icalData = new Promise((accept, reject) => {
 		request(options, function(err, response, body) {
-  		if(err){
-  			return console.log(err);
-			reject(err);
-  		}
-		
-			let entries = getIcalEntry(body);
-			infoManager.remove({}).then(()=>{
-					return infoManager.insert(entries);
-			
-			}).then(() => {accept();
-			});
-			
-			
+	  		if(err){
+	  			return console.log("Error while fetching *.ical file: ", err);
+				reject(err);
+	  		} else {
+	  			accept(body);
+	  		}
   		});
-		
 	});
-	
-	
-	
+
+	let oldInfos = infoManager.find({})
+		.sort({'extra.ts': 1})
+		.toArray()
+		.then(data => {
+			return data.map(e => new Information(e));
+		});
+
+	let newInfos = icalData.then(data => {
+		let infos = getIcalEntry(data);
+		infos.sort((a, b) => a.extra.ts - b.extra.ts || 0);
+		return infos;
+	});
+
+	let writtenInDb = Promise.all([oldInfos, newInfos]).then(arg => {
+		let [oldInfos, newInfos] = arg;
+		let infosToRemove = [];
+		let infosToInsert = [];
+		while (oldInfos.length > 0 && newInfos.length > 0) {
+			let oldInfo = oldInfos[oldInfos.length - 1];
+			let newInfo = newInfos[newInfos.length - 1];
+			if (oldInfo.extra.ts == newInfo.extra.ts && oldInfo.title == newInfo.title && oldInfo.extra.ts !== undefined) {
+				oldInfos.pop();
+				newInfos.pop();
+			} else {
+				if (oldInfo.extra.ts >= newInfo.extra.ts || oldInfo.extra.ts === undefined) {
+					infosToRemove.push(oldInfo);
+					oldInfos.pop();
+				}
+				if (newInfo.extra.ts >= oldInfo.extra.ts) {
+					infosToInsert.push(newInfo);
+					newInfos.pop();
+				}
+			}
+		}
+
+		infosToRemove = infosToRemove.concat(oldInfos);
+		infosToInsert = infosToInsert.concat(newInfos);
+
+		let idsToRemove = infosToRemove.map(e => new ObjectID(e.id));
+
+		return infoManager.remove({_id: {'$in': idsToRemove}}).then(() => {
+			if (infosToInsert.length > 0) {
+				return infoManager.insert(infosToInsert);
+			}
+		});
+
+	});
+
+	return writtenInDb;
 }
 
 function getIcalEntry(value){
@@ -81,6 +121,7 @@ function getIcalEntry(value){
 			var date = new Date(year, month, day, hours, min);
 			var timestamp = date.getTime();
 			notification.date = timestamp;
+			info.extra.ts = timestamp;
 		}
 		
 		
