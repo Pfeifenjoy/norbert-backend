@@ -142,6 +142,8 @@ class NewsFeedObject {
             let actualComponents = obj.components.map(compObj => {
                 let type = compObj.type;
                 let component = createComponent(type);
+                console.log(compObj);
+                console.log(compObj.data)
                 component.userRepresentation = compObj;
                 return component;
             });

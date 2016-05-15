@@ -38,7 +38,7 @@ class NotificationComponent extends Component{
     }
 
     setDataUserRepresentation(obj) {
-         this.date = obj.data || 0;
+         this.date = obj.date || 0;
     }
 }
 
