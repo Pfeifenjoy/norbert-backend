@@ -14,6 +14,7 @@ import {
 
 
 const contentUrl = "content.dropboxapi.com";
+const rpcURL = "api.dropboxapi.com";
 
 let MAX_BYTES_PER_UPLOAD = 150 * 1024 * 1024; // 150 MB
 let CHUNK_SIZE = 1 * 1024 * 1024; // 1MB
@@ -57,17 +58,21 @@ function upload(localFile, originalFileName) {
         throw "There is an error in the config file: Setting dropbox.storagePath is required!";
     }
 
-    return uploadFile(originalFileName, localFile, token, uploadFolder)
-        .then(dropboxObject => {
+    return uploadFile(originalFileName, localFile, token, uploadFolder).then(dropboxObject => {
 
-            // Extract id
-            let id = dropboxObject["id"].substring(dropboxObject["id"].lastIndexOf(":") + 1);
+        // Extract id
+        let id = dropboxObject["id"].substring(dropboxObject["id"].lastIndexOf(":") + 1);
+
+        return createSharedLink(id, token).then(link => {
+
+            let trimmedLink = link.replace('https://www.', '');
 
             // Object with some important information
             let fileObject = {
                 "id": id,
                 "rev": dropboxObject.rev,
                 "path": dropboxObject.path_display,
+                "link": trimmedLink
             }
 
             // Extract filename
@@ -79,7 +84,8 @@ function upload(localFile, originalFileName) {
             myFile.setToRemoteFile(fileObject, filename);
 
             return myFile;
-        })
+        });
+    });
 }
 
 /**
@@ -689,5 +695,70 @@ let multiRequestUploadFinish = (fileName, filePath, token, uploadFolder, readedB
             // Start upload...
             readNextChunk();
         });
+    });
+}
+
+/* createSharedLink
+ * needs: [id]: Dropbox ID
+ * returns a shared links for a file
+ */
+let createSharedLink = (id, token) => {
+
+    const pathURL = "/2/sharing/create_shared_link_with_settings";
+
+    // HTTP-response body
+    var body = JSON.stringify({
+        "path": "id:" + id,
+        "settings": {}
+    });
+
+    // An object of options to indicate where to post to
+    var post_options = {
+        host: rpcURL,
+        path: pathURL,
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    };
+    return new Promise((resolve, reject) => {
+
+        // Set up the request
+        var req = https.request(post_options, (res) => {
+            res.setEncoding('utf8');
+
+            let response = "";
+
+            res.on('data', (chunk) => {
+                // Add the data chunks
+                response += chunk;
+            });
+
+            res.on('end', () => {
+
+                if (res.statusCode === 200) {
+                    // return link
+                    resolve(JSON.parse(response)["url"]);
+                } else {
+                    reject({
+                        entry: entry,
+                        error: JSON.parse(response)
+                    });
+                }
+
+            });
+
+        });
+
+        req.on('error', (e) => {
+            reject({
+                entry: entry,
+                error: e
+            });
+        });
+
+        // Fire the http-request
+        req.end(body);
     });
 }
