@@ -38,7 +38,7 @@ function getNewsfeed(userId, filter=50){
     return Promise.all(promises)
         .then(([a, b]) => a.concat(b))
         .then(sortRelevance)
-        .then((a) => a.slice(1,filter))
+        .then((a) => a.slice(0,filter))
         .then(userRepresentation);
 }
 
