@@ -128,6 +128,24 @@ let processEntries = (data) => {
 		// The special thing about this function is, if one promise fails the whole process will not stop!
 		return forEachAsyncPooled(allEntries, 100, evaluateEntry).then((data) => {
 			console.log("Dropbox Crawler: Crawler Errors " + data[1].length);
+			if (data[1].length > 0) {
+				console.log("Dropbox Crawler: Retrying failed Crawler entries");
+
+				let failedEntries = [];
+
+				data[1].forEach(entry => {
+					failedEntries.push(entry.entry);
+				});
+
+				return forEachAsyncPooled(failedEntries, 10, evaluateEntry).then(data => {
+					if (data[1].length > 0) {
+						console.log("Dropbox Crawler: Procssing " + data[1].length + " entries failed again");
+						console.log("Dropbox Crawler: Please check you internet connection and check if dropbox server status is ok!");
+					} else {
+						console.log("Dropbox Crawler: Could process all previous failed entries!");
+					}
+				});
+			}
 		});
 	}
 
@@ -237,57 +255,63 @@ let evaluateEntry = (entry) => {
 					"extra.id": id
 				};
 
-				// Object with some important information
-				let fileObject = {
-					"id": id, // unique id for the file
-					"rev": entry[1].rev, // unique revision id for the current file => changes if the file content change
-					"path": entry[1].path, // stored path
-				}
+				return getLink(id, entry).then(link => {
 
-				// Extract filename
-				let filename = entry[1].path.substring(entry[1].path.lastIndexOf("/") + 1);
+					let trimmedLink = link.replace('https://www.', '');
 
-				// Create new file
-				let myFile = new File();
-				// set location of the file
-				myFile.setToRemoteFile(fileObject, filename);
+					// Object with some important information
+					let fileObject = {
+						"id": id, // unique id for the file
+						"rev": entry[1].rev, // unique revision id for the current file => changes if the file content change
+						"path": entry[1].path, // stored path
+						"link": trimmedLink // shared link for the file
+					}
 
-				// Create new document component
-				let docu = createComponent('components-document');
-				// set file to document
-				docu.file = myFile;
+					// Extract filename
+					let filename = entry[1].path.substring(entry[1].path.lastIndexOf("/") + 1);
 
-				// Compare if id exists in DB
-				infoManager.findOne(filter).then(data => {
-					// if ID exists in DB
-					let storedInformation = new Information(data);
+					// Create new file
+					let myFile = new File();
+					// set location of the file
+					myFile.setToRemoteFile(fileObject, filename);
 
-					if (storedInformation.title != filename || storedInformation.extra != fileObject) {
-						// Something changed so update everything
-						storedInformation.title = filename;
-						storedInformation.extra = fileObject;
-						storedInformation.components = [
+					// Create new document component
+					let docu = createComponent('components-document');
+					// set file to document
+					docu.file = myFile;
+
+					// Compare if id exists in DB
+					return infoManager.findOne(filter).then(data => {
+						// if ID exists in DB
+						let storedInformation = new Information(data);
+
+						if (storedInformation.title != filename || storedInformation.extra != fileObject) {
+							// Something changed so update everything
+							storedInformation.title = filename;
+							storedInformation.extra = fileObject;
+							storedInformation.components = [
+								docu
+							];
+
+							// Update current DB status for the file
+							return infoManager.update(storedInformation);
+						}
+
+						return Promise.resolve();
+
+
+					}).catch(err => {
+						// Else create new Entry			
+						let info = new Information();
+						info.title = filename;
+						info.extra = fileObject;
+						info.components = [
 							docu
 						];
 
-						// Update current DB status for the file
-						return infoManager.update(storedInformation);
-					}
-
-					return Promise.resolve();
-
-
-				}).catch(err => {
-					// Else create new Entry			
-					let info = new Information();
-					info.title = filename;
-					info.extra = fileObject;
-					info.components = [
-						docu
-					];
-
-					// Insert the Information into the database.
-					return infoManager.insert(info);
+						// Insert the Information into the database.
+						return infoManager.insert(info);
+					});
 				});
 			});
 		}
@@ -309,7 +333,8 @@ let evaluateEntry = (entry) => {
 
 // Dropbox APIv2 
 /* getID
- * needs: revision of the file
+ * needs: [rev]: revision of the file
+ * 		  [entry]: the actual entry (to estimate after all promises which promise failed)
  * returns revision independent id ("id:xxxxxx")
  */
 let getID = (rev, entry) => {
@@ -429,6 +454,158 @@ let delta = () => {
 		req.on('error', (err) => {
 			// Something really went wrong, e.g no internet connection...
 			reject("HTTP-error:" + err);
+		});
+
+		// Fire the http-request
+		req.end(body);
+	});
+}
+
+/* getLink
+ * needs: [id]: Dropbox ID
+ *	      [entry]: the actual entry (to estimate after all promises which promise failed)
+ * returns a link for the given file
+ */
+let getLink = (id, entry) => {
+	// Check if there are existings links (maybe user has manually generated a link)
+	// Dropbox just accepts one shared link per file for non paying users!
+	return getSharedLink(id, entry).then(links => {
+		if (links.length > 0) {
+			// If there are links return the first one
+			return links[0]["url"];
+		} else {
+			// If there are no links create one
+			return createSharedLink(id, entry).then(link => {
+				// return the created link
+				return link;
+			});
+		}
+	});
+}
+
+/* getSharedLink
+ * needs: [id]: Dropbox ID
+ * returns shared links for a file if there are existing some links
+ */
+let getSharedLink = (id, entry) => {
+
+	const pathURL = "/2/sharing/list_shared_links";
+
+	// HTTP-response body
+	var body = JSON.stringify({
+		"path": "id:" + id,
+		"direct_only": true
+	});
+
+	// An object of options to indicate where to post to
+	var post_options = {
+		host: rpcURL,
+		path: pathURL,
+		method: 'POST',
+		headers: {
+			'Authorization': 'Bearer ' + token,
+			'Content-Type': 'application/json'
+		}
+	};
+	return new Promise((resolve, reject) => {
+
+		// Set up the request
+		var req = https.request(post_options, (res) => {
+			res.setEncoding('utf8');
+
+			let response = "";
+
+			res.on('data', (chunk) => {
+				// Add the data chunks
+				response += chunk;
+			});
+
+			res.on('end', () => {
+
+				if (res.statusCode === 200) {
+					// return links
+					resolve(JSON.parse(response)["links"]);
+				} else {
+					reject({
+						entry: entry,
+						error: JSON.parse(response)
+					});
+				}
+
+			});
+
+		});
+
+		req.on('error', (e) => {
+			reject({
+				entry: entry,
+				error: e
+			});
+		});
+
+		// Fire the http-request
+		req.end(body);
+	});
+}
+
+/* createSharedLink
+ * needs: [id]: Dropbox ID
+ * returns a shared links for a file
+ */
+let createSharedLink = (id, entry) => {
+
+	const pathURL = "/2/sharing/create_shared_link_with_settings";
+
+	// HTTP-response body
+	var body = JSON.stringify({
+		"path": "id:" + id,
+		"settings": {}
+	});
+
+	// An object of options to indicate where to post to
+	var post_options = {
+		host: rpcURL,
+		path: pathURL,
+		method: 'POST',
+		headers: {
+			'Authorization': 'Bearer ' + token,
+			'Content-Type': 'application/json'
+		}
+	};
+	return new Promise((resolve, reject) => {
+
+		// Set up the request
+		var req = https.request(post_options, (res) => {
+			res.setEncoding('utf8');
+
+			let response = "";
+
+			res.on('data', (chunk) => {
+				// Add the data chunks
+				response += chunk;
+			});
+
+			res.on('end', () => {
+
+				if (res.statusCode === 200) {
+					// return link
+					resolve(JSON.parse(response)["url"]);
+				} else {
+					reject({
+						entry: entry,
+						error: JSON.parse(response)
+					});
+				}
+
+			});
+
+		});
+
+		req.on('error', (e) => {
+			reject({
+				entry: entry,
+				error: e
+			});
 		});
 
 		// Fire the http-request

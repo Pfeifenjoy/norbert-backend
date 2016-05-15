@@ -8,7 +8,9 @@ import fs from 'fs';
 import config from '../utils/configuration.js';
 import https from 'https';
 import querystring from 'querystring';
-import { File } from "./../core/file";
+import {
+    File
+} from "./../core/file";
 
 
 const contentUrl = "content.dropboxapi.com";
@@ -56,28 +58,28 @@ function upload(localFile, originalFileName) {
     }
 
     return uploadFile(originalFileName, localFile, token, uploadFolder)
-    .then(dropboxObject => {
+        .then(dropboxObject => {
 
-        // Extract id
-        let id = dropboxObject["id"].substring(dropboxObject["id"].lastIndexOf(":") + 1);
+            // Extract id
+            let id = dropboxObject["id"].substring(dropboxObject["id"].lastIndexOf(":") + 1);
 
-        // Object with some important information
-        let fileObject = {
-            "id": id,
-            "rev": dropboxObject.rev,
-            "path": dropboxObject.path_display,
-        }
+            // Object with some important information
+            let fileObject = {
+                "id": id,
+                "rev": dropboxObject.rev,
+                "path": dropboxObject.path_display,
+            }
 
-        // Extract filename
-        let filename = dropboxObject["name"];
+            // Extract filename
+            let filename = dropboxObject["name"];
 
-        // Create new file
-        let myFile = new File();
-        // set location of the file
-        myFile.setToRemoteFile(fileObject, filename);
+            // Create new file
+            let myFile = new File();
+            // set location of the file
+            myFile.setToRemoteFile(fileObject, filename);
 
-        return myFile;
-    })
+            return myFile;
+        })
 }
 
 /**
@@ -119,20 +121,7 @@ function download(remoteFile, localFile) {
  *          file can be viewed/downloaded from.
  */
 function getUrl(remoteFile) {
-
-    // build a data-url for the file.
-    const dropboxHomeUrl = "www.dropbox.com/home";
-
-    // Extract filename 
-    console.log("hier", remoteFile);
-    console.log(remoteFile);
-    let filename = remoteFile.path.substring(remoteFile.path.lastIndexOf("/") + 1);
-    console.log("hier");
-
-    // Extract path
-    let filepath = remoteFile.path.substring(0, remoteFile.path.lastIndexOf("/"));
-
-    return dropboxHomeUrl + filepath + "?preview=" + filename;
+    return remoteFile.link;
 }
 
 module.exports = {
@@ -626,7 +615,7 @@ let multiRequestUploadFinish = (fileName, filePath, token, uploadFolder, readedB
 
     // An object of options to indicate where to post to
     var post_options_start = {
-        host: this.contentUrl,
+        host: contentUrl,
         path: pathUrl,
         method: 'POST',
         headers: {
