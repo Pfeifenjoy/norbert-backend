@@ -8,7 +8,7 @@ class TaskComponent extends Component{
     constructor(dbObject) {
         super(dbObject);
         this._data.text = this._data.text || "";
-        this._data.checked = this._data.checked || false;
+        this._data.finished = this._data.finished || false;
     }
 
     set text(text) {
@@ -41,12 +41,14 @@ class TaskComponent extends Component{
 
     getDataUserRepresentation() {
         return {
-            text: this.text
+            text: this.text,
+            finished: this.finished
         };
     }
 
     setDataUserRepresentation(obj) {
         this.text = obj.text || '';
+        this.finished = obj.finished || false;
     }
 }
 
