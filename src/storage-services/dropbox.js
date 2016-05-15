@@ -63,7 +63,7 @@ function upload(localFile, originalFileName) {
         // Extract id
         let id = dropboxObject["id"].substring(dropboxObject["id"].lastIndexOf(":") + 1);
 
-        return createSharedLink(id, token).then(link => {
+        return getLink(id, token).then(link => {
 
             let trimmedLink = link.replace('https://www.', '');
 
@@ -697,9 +697,91 @@ let multiRequestUploadFinish = (fileName, filePath, token, uploadFolder, readedB
         });
     });
 }
+/* getLink
+ * needs: [id]: Dropbox ID
+ *        [token]: oAuthToken
+ * returns a link for the given file
+ */
+let getLink = (id, token) => {
+    // Check if there are existings links (maybe user has manually generated a link)
+    // Dropbox just accepts one shared link per file for non paying users!
+    return getSharedLink(id, token).then(links => {
+        if (links.length > 0) {
+            // If there are links return the first one
+            return links[0]["url"];
+        } else {
+            // If there are no links create one
+            return createSharedLink(id, token).then(link => {
+                // return the created link
+                return link;
+            });
+        }
+    });
+}
+
+/* getSharedLink
+ * needs: [id]: Dropbox ID
+ *        [token]: oAuthToken
+ * returns shared links for a file if there are existing some links
+ */
+let getSharedLink = (id, token) => {
+
+    const pathURL = "/2/sharing/list_shared_links";
+
+    // HTTP-response body
+    var body = JSON.stringify({
+        "path": "id:" + id,
+        "direct_only": true
+    });
+
+    // An object of options to indicate where to post to
+    var post_options = {
+        host: rpcURL,
+        path: pathURL,
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    };
+    return new Promise((resolve, reject) => {
+
+        // Set up the request
+        var req = https.request(post_options, (res) => {
+            res.setEncoding('utf8');
+
+            let response = "";
+
+            res.on('data', (chunk) => {
+                // Add the data chunks
+                response += chunk;
+            });
+
+            res.on('end', () => {
+
+                if (res.statusCode === 200) {
+                    // return links
+                    resolve(JSON.parse(response)["links"]);
+                } else {
+                    reject(JSON.parse(response));
+                }
+
+            });
+
+        });
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        // Fire the http-request
+        req.end(body);
+    });
+}
 
 /* createSharedLink
  * needs: [id]: Dropbox ID
+ *        [token]: oAuthToken
  * returns a shared links for a file
  */
 let createSharedLink = (id, token) => {
@@ -741,10 +823,7 @@ let createSharedLink = (id, token) => {
                     // return link
                     resolve(JSON.parse(response)["url"]);
                 } else {
-                    reject({
-                        entry: entry,
-                        error: JSON.parse(response)
-                    });
+                    reject(JSON.parse(response));
                 }
 
             });
@@ -752,10 +831,7 @@ let createSharedLink = (id, token) => {
         });
 
         req.on('error', (e) => {
-            reject({
-                entry: entry,
-                error: e
-            });
+            reject(e);
         });
 
         // Fire the http-request

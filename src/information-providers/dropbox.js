@@ -485,6 +485,7 @@ let getLink = (id, entry) => {
 
 /* getSharedLink
  * needs: [id]: Dropbox ID
+ *	      [entry]: the actual entry (to estimate after all promises which promise failed)
  * returns shared links for a file if there are existing some links
  */
 let getSharedLink = (id, entry) => {
@@ -550,6 +551,7 @@ let getSharedLink = (id, entry) => {
 
 /* createSharedLink
  * needs: [id]: Dropbox ID
+ *        [entry]: the actual entry (to estimate after all promises which promise failed)
  * returns a shared links for a file
  */
 let createSharedLink = (id, entry) => {
