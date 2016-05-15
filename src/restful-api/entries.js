@@ -36,11 +36,10 @@ router.put("/:entryId", (req, res) => {
             let tags = req.body.tags;
             let components = req.body.components || [];
 
-            //components = entry.components.map(c => c.dbRepresentation).concat([components.pop()]); //TODO workaround :D
             entry.userRepresentation = {
                 title: title || entry.title,
                 tags: tags || entry.tags,
-                components: components
+                components: components 
             }
             return req.app.core.updateEntry(entry);
         }
