@@ -1,3 +1,6 @@
+/**
+ * @author Arwed Mett
+ */
 import {Component} from './../core/component';
 
 class TaskComponent extends Component{

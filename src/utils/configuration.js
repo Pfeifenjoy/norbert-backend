@@ -1,3 +1,7 @@
+/**
+ * @author: Tobias Dorra
+ */
+
 var fs = require('fs');
 var clone = require('./clone');
 

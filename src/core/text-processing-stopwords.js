@@ -1,3 +1,6 @@
+/**
+ * @author: Tobias Dorra
+ */
 
 function isStopWord(word) {
     // source of the stopword list:

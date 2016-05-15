@@ -14,6 +14,11 @@ core.createCore()
 		core.importInformation()
 			.then(function(){
 				console.log("Imported  Information");
+                console.log("Starting uploading files.");
+                return core.uploadFiles();
+            })
+            .then(() => {
+                console.log("Finished uploading files.");
                 console.log("Updating word index");
                 return core.process();
             }).then(function(){
@@ -22,11 +27,6 @@ core.createCore()
                 return core.calculateRecommendations();
             })
             .then(() => {
-                console.log("Starting uploading files.");
-                return core.uploadFiles();
-            })
-            .then(() => {
-                console.log("Finished uploading files.");
                 console.log("Finalizing.");
                 return core.resetDirty();
             })

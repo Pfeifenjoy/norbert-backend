@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-// restFULL api
+// RESTful api
 const apiEnabled = config.get('http.api.enabled') || true;
 const apiBaseUrl = config.get('http.api.baseUrl') || '/api/v1';
 const port = config.get("port") || 3001;

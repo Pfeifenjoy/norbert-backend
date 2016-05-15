@@ -1,4 +1,3 @@
-
 /**
  * @author: Tobias Dorra
  */
@@ -15,6 +14,9 @@ class Information extends NewsFeedObject {
 
         this._obj.hidden_for = this._obj.hidden_for || [];
         this._obj.extra = this._obj.extra || {};
+        if (this._obj.showOnCreation === undefined) {
+            this._obj.showOnCreation = true;
+        }
     }
 
     /**
@@ -53,6 +55,18 @@ class Information extends NewsFeedObject {
 
     set extra(value) {
         this._obj.extra = value;
+    }
+
+    /**
+     * Determines wheter the information is placed directly on the top of the 
+     * newsfeed after it was created to catch the user's attention, or not.
+     */
+    get showOnCreation() {
+        return this._obj.showOnCreation;
+    }
+
+    set showOnCreation(value) {
+        this._obj.showOnCreation = value;
     }
 
 }

@@ -1,3 +1,7 @@
+/**
+ * @author: Tobias Dorra
+ */
+
 import {forEachAsync} from '../utils/foreach-async';
 
 function toIds(entries, type) {
@@ -134,12 +138,16 @@ function process() {
 }
 
 function resetDirty(){
+    console.log('pre-cleanup');
     let eDirt = this.db.collection('entries').updateMany({'dirty': true}, {'$set': {'dirty': false}});
     let iDirt = this.db.collection('information').updateMany({'dirty': true}, {'$set': {'dirty': false}});
     return Promise.all([eDirt, iDirt]).then(() => {
+        console.log('mid-cleanup');
         let eDel = this.db.collection('entries').remove({'deleted': true});
         let iDel = this.db.collection('information').remove({'deleted': true});
         return Promise.all([eDel, iDel]);
+    }).then(() => {
+        console.log('post-cleanup');
     });
 }
 

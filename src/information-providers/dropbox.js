@@ -22,22 +22,24 @@ var https = require('https');
 var querystring = require('querystring');
 var fs = require('fs');
 
+// Static URLs which are needed for API Calls
 const rpcURL = "api.dropboxapi.com";
+
+// Path of the dropbox cursor. The cursor represents the local state of indexed dropbox files.
 const cursorFilepath = './files/dropbox/cursor.txt';
 
-let token = "";
-let path_prefix = "";
+let token = ""; // OAuth token
+let path_prefix = ""; // Path where norbert searches for new information
+let cursor = ""; // Dropbox cursor
+let reset = false; // If true dropbox indicates that there are a lot of changes and we have to delete our database
 
-let cursor = "";
-let reset = false;
-
-let infoManager;
+let infoManager; // reference for db operations
 
 // Gets called from the core
 var sync = function(infManager) {
 	console.log(" - Dropbox Crawler -");
 
-	// Save infoManager gloabal in the package scope
+	// Save infoManager in the package scope
 	infoManager = infManager;
 
 	// Get needed data from config	
@@ -47,27 +49,37 @@ var sync = function(infManager) {
 
 		// Get changes from Server
 		return getData().then(data => {
-				// Save cursor
-				/*fs.writeFile(cursorFilepath, cursor, err => {
-					if (err) {
-						return console.log(err);
-					}
-				});*/
-				fs.writeFileSync(cursorFilepath, cursor);
-
 				if (reset) {
-					// Clear all information from dropbox in database!
+					// Clear all information from dropbox in database! 
 					console.log("Dropbox Crawler: Clearing database...");
 					return infoManager.remove({}).then(() => {
 						// Process received data
 						return processEntries(data).then(() => {
 							console.log("Dropbox Crawler: Done with processing data");
+
+							// Save cursor, for deployment use async file write => Not used for development because under windows
+							// it causes sometimes a "empty" cursor.txt (npm bug)
+							/*fs.writeFile(cursorFilepath, cursor, err => {
+								if (err) {
+									return console.log(err);
+								}
+							});*/
+							fs.writeFileSync(cursorFilepath, cursor);
 						});
 					});
 				} else {
 					// Process received data
 					return processEntries(data).then(() => {
 						console.log("Dropbox Crawler: Done with processing data");
+
+						// Save cursor, for deployment use async file write => Not used for development because under windows
+						// it causes sometimes a "empty" cursor.txt (npm bug)
+						/*fs.writeFile(cursorFilepath, cursor, err => {
+							if (err) {
+								return console.log(err);
+							}
+						});*/
+						fs.writeFileSync(cursorFilepath, cursor);
 					});
 				}
 
@@ -87,13 +99,21 @@ module.exports = {
 	}
 };
 
+/* processEntries
+ *
+ * [data] is a list of all http-responses
+ * Takes the raw http-response and extracts all new entries.
+ * After that all new entries will be processed.
+ */
 let processEntries = (data) => {
 	// Get all entries from response
 	let arrayEntries = [];
 	data.forEach(d => {
+		// extract the entries from every http-response
 		arrayEntries.push(d.entries);
 	});
 
+	// If there are entries -> proxess them
 	if (arrayEntries.length > 0) {
 		// Concat all entries
 		let allEntries = arrayEntries.reduce((previousValue, currentValue) => {
@@ -102,6 +122,10 @@ let processEntries = (data) => {
 
 		console.log("Dropbox Crawler: Processing received data... (this may take some time on first startup!)");
 
+		// Create a synchronised asynchronos pool of promises.
+		// The function will take all promises an will execute x (here 100) promises at the same time.
+		// If one promise is done the next promise will be taken.
+		// The special thing about this function is, if one promise fails the whole process will not stop!
 		return forEachAsyncPooled(allEntries, 100, evaluateEntry).then((data) => {
 			console.log("Dropbox Crawler: Crawler Errors " + data[1].length);
 		});
@@ -110,13 +134,17 @@ let processEntries = (data) => {
 	return Promise.resolve();
 }
 
+/* initCrawler
+ *
+ * Reads the config and checks if everything this package needs is available.
+ */
 let initCrawler = () => {
 
 	token = config.get('dropbox.oAuthToken');
 	path_prefix = config.get('dropbox.informationPath');
 
 	if (token === undefined || path_prefix === undefined) {
-		throw "There is an error in the config file: Setting dropbox.oAuthToken, dropbox.informationPath is required!";
+		throw "There is an error in the config file: Settings dropbox.oAuthToken and dropbox.informationPath are required!";
 	}
 
 	// Get cursor from cursor file
@@ -124,6 +152,7 @@ let initCrawler = () => {
 	return new Promise((resolve, reject) => {
 		fs.stat(cursorFilepath, (err, stat) => {
 			if (err == null) {
+				// File exists already so read it.
 				fs.readFile(cursorFilepath, 'utf8', (err, data) => {
 					if (err) {
 						return console.log(err);
@@ -131,8 +160,8 @@ let initCrawler = () => {
 					cursor = data;
 					resolve();
 				});
-
 			} else if (err.code == 'ENOENT') {
+				// File doesn't exists so create it with an empty cursor
 				cursor = "";
 				fs.writeFile(cursorFilepath, cursor, err => {
 					if (err) {
@@ -141,13 +170,19 @@ let initCrawler = () => {
 					resolve();
 				});
 			} else {
+				// Some error occured
 				reject(err.code);
 			}
 		});
 	});
 }
 
+/* getData
+ *
+ * Gets new data/entries from dropbox server. 
+ */
 let getData = () => {
+	// Call the api call
 	return delta().then(data => {
 
 			// Save cursor for next calls
@@ -176,17 +211,26 @@ let getData = () => {
 		});
 }
 
+/* evaluateEntry
+ *
+ * Evaluates a single entry and extracts all important information.
+ */
 let evaluateEntry = (entry) => {
+	// Promise for synchronisation
 	var prom = Promise.resolve();
+
 	// check if [<path>, metadata != null]
 	if (!(entry[1] === null)) {
-
+		// Directories are umimportant for us.
 		if (entry[1]["is_dir"] === false) {
 
 			// Get id of the file if its an interesting file
+			// Revision independent dropbox IDs where indroduced in dropbox APIv2
+			// Because we need the delta function (webhooks are the alternative but they require a webhook service and a
+			// unique webhook URL for every norbert instance => this is not a option) we have to ask the ID for every file.
 			prom = getID(entry[1].rev, entry).then(responseID => {
 
-				// Extract id
+				// Extract ID
 				let id = responseID.substring(responseID.lastIndexOf(":") + 1);
 
 				let filter = {
@@ -219,7 +263,7 @@ let evaluateEntry = (entry) => {
 					let storedInformation = new Information(data);
 
 					if (storedInformation.title != filename || storedInformation.extra != fileObject) {
-						// Something changed so upadate it
+						// Something changed so update everything
 						storedInformation.title = filename;
 						storedInformation.extra = fileObject;
 						storedInformation.components = [
@@ -334,7 +378,7 @@ let getID = (rev, entry) => {
 /* delta
  * needs: token, cursor, path_prefix
  * returns files/folders in the Dropbox or in a given subdirectory, a cursor to process later on, after first /delta request
- * the actual cursor must be given every next /delta call and the path_prefix must be the same!!
+ * the actual cursor must be given every next /delta call and the path_prefix must be the same!
  */
 let delta = () => {
 

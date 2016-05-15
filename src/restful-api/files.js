@@ -1,50 +1,48 @@
 /**
- * @author Arwed Mett
+ * @author Arwed Mett, Tobias Dorra
  */
 import { Router } from "express";
 import Busboy from "busboy";
-import { UniqueFile, states } from "../core/file";
+import { File, states, buildTempFileName } from "../core/file";
+import fs from 'fs';
+import scheduler from '../task-scheduler/scheduler';
 
 let router = new Router;
 
 router.post("/", (req, res) => {
     let busboy = new Busboy({ headers: req.headers });
-    let entryId, componentId;
-    let file = new UniqueFile;
-    let originalFileName = "unknown";
 
-    function updateEntry() {
-        if(entryId && componentId && file.state === states.local_file) {
-            req.app.core.getEntry(entryId)
-            .then(entry => {
-                if(entry.owned_by !== req.session.user.id) throw Error("Unauthorized");
-                let { components } = entry;
-                components[componentId].file = file;
-                components[componentId].originalFileName = originalFileName;
-                entry.components = components;
-                return req.app.core.updateEntry(entry);
-            })
-            .catch(e => {
-                console.error(e);
-                res.status(400).send("Entry does not exist.");
-            });
-        }
-    }
+    let entryId, componentId, originalFileName;     // data that has to be provided in the request
+    let tmpFileName;                                // the name of the temporary file on the server
 
     busboy.on("file", function(fieldname, data, filename, encoding, mimetype) {
-        let { stream } = file;
+
+        // do not accept multiple files
+        if (tmpFileName) {
+            return;
+        }
+
+        // use a temporary file to save the uploaded document.
+        tmpFileName = buildTempFileName();
+        
+        // remember the file's name.
+        originalFileName = filename || 'unknown';
+
+        // stream it to the local temporary file.
+        let stream = fs.createWriteStream(tmpFileName);
+
         stream.on("error", error => {
             console.error(error);
-            res.send("File could not be uploaded");
-        })
-        stream.on("close", () => {
-            file.state = states.local_file
-            originalFileName = filename;
-            updateEntry();
-        })
+            res.send("File could not be uploaded.");
+        });
+
+        stream.on("close", () => { /* Can this be removed? */ });
+
         data.pipe(stream);
     })
     .on("field", function(fieldname, val) {
+
+        // remember the incoming fields.
         if(fieldname === "entryId"){
             entryId = val;
         } else if (fieldname === "componentId") {
@@ -52,10 +50,50 @@ router.post("/", (req, res) => {
         } else {
             res.send("unknown field: " + fieldname);
         }
-        updateEntry();
     })
     .on("finish", function() {
-        res.send("Upload complete");
+
+        // store the file if all required parameters where provided.
+        if(entryId && componentId && originalFileName && tmpFileName) {
+
+            // get the entry where the file was uploaded for.
+            let entry = req.app.core.getEntry(entryId);
+
+            entry.catch(e => {
+                console.error(e);
+                res.status(400).send("Entry does not exist.");
+            });
+
+            // attach the file to the entry
+            let changedEntry = entry.then(entry => {
+                if(entry.owned_by !== req.session.user.id) throw Error("Unauthorized");
+                let components = entry.components;
+                components[componentId].file.setToLocalFile(tmpFileName, originalFileName);
+                entry.components = components;
+                return entry;
+            });
+
+            // save the entry in the database.
+            let done = changedEntry.then(entry => {
+                return res.app.core.updateEntry(entry);
+            });
+
+            // answer the http query
+            done.then(() => {
+                res.send("Upload complete");
+            });
+
+            done.catch(() => {
+                res.status(500).send('Error');
+            });
+
+            // trigger the scheduler to upload the document to dropbox.
+            scheduler.trigger();
+            
+        } else {
+            res.status(400).send('Input was incomplete');
+        }
+        
     })
 
     req.pipe(busboy)

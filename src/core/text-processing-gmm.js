@@ -1,3 +1,7 @@
+/**
+ * @author: Tobias Dorra
+ */
+
 var fs = require('fs');
 import {exec} from 'child_process';
 import config from '../utils/configuration';

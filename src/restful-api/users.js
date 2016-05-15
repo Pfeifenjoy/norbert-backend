@@ -42,20 +42,23 @@ router.put('/', (req, res) => {
     })
 });
 
-router.delete("/", (req,res) => {
+router.delete("/:userId", (req,res) => {
+    if(req.params.userId !== req.session.user.username) {
+        return res.status(403).send("Unauthorized.");
+    }
     req.app.core.deleteUser(req.session.user.username)
-        .then(function(){
-            req.session = null;
-            res.send('User ' + req.session.user.username + ' was succesfully deleted.');
-        })
-        .catch(function(){
-            res.status(500).send('User ' + req.session.user.username + ' could not be deleted.');
-        });   
+    .then(function(){
+        res.send('User ' + req.session.user.username + ' was succesfully deleted.');
+        delete req.session.user;
+    })
+    .catch(function(e){
+        console.error("could not delete user: " + e);
+        res.status(500).send('User ' + req.session.user.username + ' could not be deleted.');
+    });   
 });
 
 
 router.post("/login", (req, res) => {
-    console.log(req.body);
     let {username, password} = req.body;  
     if (username === undefined || password === undefined) {
         res.status(400).send('Both username and password have to be provided.');

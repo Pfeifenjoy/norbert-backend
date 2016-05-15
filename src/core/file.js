@@ -29,6 +29,9 @@ function deleteFile(filename) {
     })
 }
 
+/**
+ * Creeates a name for a temporary file.
+ */
 let tmpFileCounter = 0;
 function buildTempFileName(extension = 'tmp') {
     // build a unique identifier
@@ -118,10 +121,10 @@ class File {
     /**
      * Set to a local file
      */
-    setToLocalFile(filename) {
+    setToLocalFile(filename, originalFileName=null) {
         this._obj.state = local_file;
         this._obj.location = filename;
-        this._obj.originalFileName = path.basename(filename);
+        this._obj.originalFileName = originalFileName || path.basename(filename);
     }
 
     /**
@@ -145,20 +148,21 @@ class File {
     upload() {
         let [ssName, storageService] = getStorageService();
 
-        console.log(this.state == local_file ? "uploading" : "not uploadng");
         if (this.state == local_file) {
+            console.log('uploading file: ', this.originalFileName);
             let oldLocation = this._obj.location;
             return storageService.upload(oldLocation, this.originalFileName)
             .then(remoteFile => {
                 this._obj.ss = ssName;
                 this._obj.state = remote_file;
                 this._obj.location = remoteFile.dbRepresentation.location;
-                console.log("uploaded");
+                console.log("uploaded file.");
 
                 return deleteFile(oldLocation);
             })
             .catch(e => {
                 console.error(e);
+                console.log("error while uploading file.");
             });
         } else if(this.state == remote_file) {
             return Promise.resolve();
@@ -228,23 +232,11 @@ class File {
         return storageService.getUrl(this._obj.location);
     }
 
-    get stream() {
-        return fs.createWriteStream(this._obj.location);
-    }
-
-}
-
-class UniqueFile extends File {
-    constructor() {
-        super({
-            location: buildTempFileName()
-        });
-    }
 }
 
 module.exports = {
     File,
-    UniqueFile,
+    buildTempFileName,
     states: {
         no_file: no_file,
         local_file: local_file,
