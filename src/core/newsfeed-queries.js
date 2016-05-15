@@ -6,7 +6,6 @@ import { Entry } from "./entry";
 import { ObjectId } from "mongodb";
 import assert from "assert";
 
-
 //Get the relevance of the NewsfeedObject, if there is a notification component, use either the notification date or the createdOn date, whichever is closer to the current date
 function getRelevance(newsfeedObject) {
     let notifications = newsfeedObject.notifications;
@@ -38,7 +37,9 @@ function getNewsfeed(userId, filter=50){
     return Promise.all(promises)
         .then(([a, b]) => a.concat(b))
         .then(sortRelevance)
-        .then((a) => a.slice(0,filter))
+        .then((a) => a.filter(
+            (element, index) => index < filter || element instanceof Entry
+        ))
         .then(userRepresentation);
 }
 
