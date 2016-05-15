@@ -1,3 +1,0 @@
-[submodule "files/frontend"]
-	path = files/frontend
-	url = git@metthub.de:norbert/frontend
