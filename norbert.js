@@ -16,7 +16,7 @@ console.log(
 function handleError(errMessage) {
     console.error(errMessage);
     console.error("This is bad. Recheck the dependencies and try again.");
-    system.exit(1);
+    process.exit(1);
 }
 
 function compileBackend(callback) {
@@ -80,7 +80,7 @@ function updateFrontend(callback) {
                 if(callback) callback();
             });
 
-        }
+        });
     })
 }
 
