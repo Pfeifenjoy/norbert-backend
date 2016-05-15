@@ -46,6 +46,9 @@ function hideInformation(userID, informationID){
     .then(i => {
       if(i){
         let info = new Information(i);
+        let hidden_for = info.hidden_for;
+        hidden_for.push(userID);
+        info.hidden_for = hidden_for;
         let data = info.dbRepresentation;
         this.db.collection('information').update({_id : ObjectId(informationID)}, data);
       }
