@@ -80,7 +80,7 @@ function updateFrontend(callback) {
                 if(callback) callback();
             });
 
-        }
+        });
     })
 }
 
