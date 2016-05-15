@@ -62,31 +62,16 @@ function installFrontend(callback) {
     })
 }
 
-function updateFrontend(callback) {
-    console.log("Downloading the newest version of the frontend.");
-    var lastPath = process.cwd();
-    process.chdir(__dirname + "/files/frontend");
-    exec("git submodule update --init", function(err, stdout, stderr) {
-        if(err) {
-            handleError("The frontend could not be downloaded: " + stderr + "\nPlease check if you have git installed.");
-        }
-        exec("git pull origin master", function(err, stdout, stderr) {
-            if(err) {
-                handleError("The frontend could not be downloaded: " + stderr + "\nPlease check if you have git installed.");
-            }
-            console.log("Downloaded the frontend.");
-            installFrontend(function() {
-                process.chdir(lastPath);
-                if(callback) callback();
-            });
-
-        });
-    })
-}
-
 function finished() {
     console.log("Everything done.");
     console.log("Execute 'npm start' to take Norbert for a spinn.");
 }
 
-installBackend(updateFrontend);
+installBackend(function (callback) {
+	var lastPath = process.cwd();
+	process.chdir(__dirname + "/files/frontend");
+	installFrontend(function() {
+		process.chdir(lastPath);
+        if(callback) callback();
+    });
+});
