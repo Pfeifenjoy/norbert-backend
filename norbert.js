@@ -70,11 +70,17 @@ function updateFrontend(callback) {
         if(err) {
             handleError("The frontend could not be downloaded: " + stderr + "\nPlease check if you have git installed.");
         }
-        console.log("Downloaded the frontend.");
-        installFrontend(function() {
-            process.chdir(lastPath);
-            if(callback) callback();
-        });
+        exec("git pull origin master", function(err, stdout, stderr) {
+            if(err) {
+                handleError("The frontend could not be downloaded: " + stderr + "\nPlease check if you have git installed.");
+            }
+            console.log("Downloaded the frontend.");
+            installFrontend(function() {
+                process.chdir(lastPath);
+                if(callback) callback();
+            });
+
+        }
     })
 }
 
