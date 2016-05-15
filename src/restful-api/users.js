@@ -59,7 +59,6 @@ router.delete("/:userId", (req,res) => {
 
 
 router.post("/login", (req, res) => {
-    console.log(req.body);
     let {username, password} = req.body;  
     if (username === undefined || password === undefined) {
         res.status(400).send('Both username and password have to be provided.');
