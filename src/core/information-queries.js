@@ -7,7 +7,7 @@ import {ObjectId} from 'mongodb';
 
 
 function getInformation(userID){
-	let query = {hidden_for : {$ne : userID}, deleted: false};
+	let query = {hidden_for : {$ne : ObjectId(userID)}, deleted: false};
 	let InformationCursor = this.db.collection('information').find(query);
   let dbResult = InformationCursor.toArray();
   let result = dbResult.then(array => {
@@ -43,9 +43,10 @@ function hideInformation(userID, informationID){
     .then(i => {
       if(i){
         let info = new Information(i);
-        let hidden_for = info.hidden_for;
-        hidden_for.push(userID);
-        info.hidden_for = hidden_for;
+        if(info.hiddenFor === undefined){
+          info.hiddenFor = [];
+        }
+        info.hiddenFor.push(ObjectId(userID));
         let data = info.dbRepresentation;
         this.db.collection('information').update({_id : ObjectId(informationID)}, data);
       }
