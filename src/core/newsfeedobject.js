@@ -137,7 +137,7 @@ class NewsFeedObject {
 
     set userRepresentation(obj) {
         if (obj.id)     this.id = ObjectID(obj.id);
-        if (obj.title)  this.title = obj.title;
+        if (obj.title !== undefined)  this.title = obj.title;
         if (obj.components) {
             let actualComponents = obj.components.map(compObj => {
                 let type = compObj.type;

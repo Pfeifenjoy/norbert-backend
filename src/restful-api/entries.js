@@ -32,12 +32,12 @@ router.put("/:entryId", (req, res) => {
     req.app.core.getEntry(req.params.entryId)
     .then(entry => {
         if(entry.owned_by = req.session.user.id) {
-            let title = req.body.title;
+            let title = req.body.title === undefined ? entry.title : req.body.title; 
             let tags = req.body.tags;
             let components = req.body.components || [];
 
             entry.userRepresentation = {
-                title: title || entry.title,
+                title,
                 tags: tags || entry.tags,
                 components: components 
             }
