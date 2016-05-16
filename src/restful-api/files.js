@@ -1,5 +1,8 @@
 /**
  * @author Arwed Mett, Tobias Dorra
+ * 
+ * These routes are used to upload files
+ * Requests directed to /api/v1/files are handled here
  */
 import { Router } from "express";
 import Busboy from "busboy";
@@ -9,6 +12,7 @@ import scheduler from '../task-scheduler/scheduler';
 
 let router = new Router;
 
+//Route to upload a file to the server and then ultimately store it in the attached dropbox
 router.post("/", (req, res) => {
     let busboy = new Busboy({ headers: req.headers });
 

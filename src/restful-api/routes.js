@@ -1,5 +1,5 @@
 /**
- * @author Tobias Dorra, Arwed Mett
+ * @author Tobias Dorra, Arwed Mett, Simon Oswald
  */
 import { Router } from "express";
 import session from "express-session";
@@ -18,6 +18,7 @@ import search from "./search";
 import information from "./information";
 
 
+//Set up the Session and all the API-Routes 
 export function initialRoutes(core) {
     // create router
     const router = new Router;
