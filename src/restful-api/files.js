@@ -72,7 +72,8 @@ router.post("/", (req, res) => {
             let changedEntry = entry.then(entry => {
                 if(entry.owned_by !== req.session.user.id) throw Error("Unauthorized");
                 let components = entry.components;
-                components[componentId].file.setToLocalFile(tmpFileName, originalFileName);
+                let component = components.find(component => component.id == componentId)
+                component.file.setToLocalFile(tmpFileName, originalFileName);
                 entry.components = components;
                 return entry;
             });
