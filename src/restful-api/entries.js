@@ -57,9 +57,9 @@ router.put("/:entryId", (req, res) => {
 router.get("/:entryId", (req,res) => {
     req.app.core.getEntry(req.params.entryId)
     .then(entry => {
-        res.json({
-            entry
-        })
+        res.json(
+            entry.userRepresentation
+        )
     })
     .catch(e => {
         console.error(e);
