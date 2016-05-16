@@ -249,13 +249,25 @@ let singleRequestUpload = (fileName, filePath, token, uploadFolder) => {
 
     const pathUrl = "/2/files/upload";
 
+    /* Known bug in the dropbox API special chars 
+     * like ÜÖÄ causes problems with dropbox internal
+     * server representation (dropbox computer client has the same problem).
+     * Because there is no function for just the dropbox specific chars
+     * which causes problems, we will just decode any special char to the
+     * most equivalend "normal" char.
+     */
+    let combining = /[\u0300-\u036F]/g;
+    let encodedURIPath = uploadFolder + "/" + fileName.normalize('NFKD').replace(combining, '');
+
     // HTTP-Header
     let headerOptions = JSON.stringify({
-        "path": uploadFolder + "/" + fileName,
+        "path": encodedURIPath,
         "mode": "add",
         "autorename": true,
         "mute": true
     });
+
+    console.log("Header: " + headerOptions);
 
     // An object of options to indicate where to post to
     let post_options = {
@@ -603,105 +615,115 @@ let multiRequestUploadAppend = (fileName, filePath, token, readedBytes, session_
  */
 let multiRequestUploadFinish = (fileName, filePath, token, uploadFolder, readedBytes, session_id) => {
 
-    const pathUrl = "/2/files/upload_session/finish";
+        const pathUrl = "/2/files/upload_session/finish";
 
-    // HTTP-Header
-    var headerOptions = JSON.stringify({
-        "cursor": {
-            "session_id": session_id,
-            "offset": readedBytes
-        },
-        "commit": {
-            "path": uploadFolder + "/" + fileName,
-            "mode": "add",
-            "autorename": true,
-            "mute": true
-        }
-    });
+        /* Known bug in the dropbox API special chars 
+         * like ÜÖÄ causes problems with dropbox internal
+         * server representation (dropbox computer client has the same problem).
+         * Because there is no function for just the dropbox specific chars
+         * which causes problems, we will just decode any special char to the
+         * most equivalend "normal" char.
+         */
+        let combining = /[\u0300-\u036F]/g;
+        let encodedURIPath = uploadFolder + "/" + fileName.normalize('NFKD').replace(combining, '');
 
-    // An object of options to indicate where to post to
-    var post_options_start = {
-        host: contentUrl,
-        path: pathUrl,
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/octet-stream',
-            'Dropbox-API-Arg': headerOptions
-        }
-    };
-
-
-    return new Promise((resolve, reject) => {
-        // Set up the request
-        let req = https.request(post_options_start, (res) => {
-
-            var data = "";
-            res.on('data', (chunk) => {
-                // Add the data chunks
-                data += chunk;
-            });
-
-            res.on('end', () => {
-                if (res.statusCode == 200)
-                    resolve(JSON.parse(data));
-                else reject(JSON.parse(data));
-            });
-
-        });
-
-        req.on('error', (e) => {
-            reject(e);
-        });
-
-        // Buffers the actual chunk of the file
-        let buffer = new Buffer(CHUNK_SIZE);
-
-        fs.open(filePath, 'r', function(err, fd) {
-            if (err) throw err;
-
-            function readNextChunk() {
-                fs.read(fd, buffer, 0, CHUNK_SIZE, readedBytes, function(err, bytesRead) {
-                    if (err) throw err;
-
-                    if (bytesRead === 0) {
-                        // done reading
-                        console.log("Uploaded last 150MB");
-                        req.end();
-
-                        fs.close(fd, function(err) {
-                            if (err) throw err;
-                        });
-                        return;
-                    }
-
-                    var data;
-                    if (bytesRead < CHUNK_SIZE) {
-                        // slice buffer if there is less data to upload then chunk size
-                        data = buffer.slice(0, bytesRead);
-                    } else {
-                        // upload the whole buffer
-                        data = buffer;
-                    }
-
-                    req.write(data, () => {
-                        // Uplode more...
-                        readNextChunk();
-                    });
-
-
-                });
+        // HTTP-Header
+        var headerOptions = JSON.stringify({
+            "cursor": {
+                "session_id": session_id,
+                "offset": readedBytes
+            },
+            "commit": {
+                "path": encodedURIPath,
+                "mode": "add",
+                "autorename": true,
+                "mute": true
             }
-            // Start upload...
-            readNextChunk();
         });
-    });
-}
-/* getLink
- * needs: [id]: Dropbox ID
- *        [token]: oAuthToken
- * returns a link for the given file
- */
+
+        // An object of options to indicate where to post to
+        var post_options_start = {
+            host: contentUrl,
+            path: pathUrl,
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/octet-stream',
+                'Dropbox-API-Arg': headerOptions
+            }
+        };
+
+
+        return new Promise((resolve, reject) => {
+            // Set up the request
+            let req = https.request(post_options_start, (res) => {
+
+                var data = "";
+                res.on('data', (chunk) => {
+                    // Add the data chunks
+                    data += chunk;
+                });
+
+                res.on('end', () => {
+                    if (res.statusCode == 200)
+                        resolve(JSON.parse(data));
+                    else reject(JSON.parse(data));
+                });
+
+            });
+
+            req.on('error', (e) => {
+                reject(e);
+            });
+
+            // Buffers the actual chunk of the file
+            let buffer = new Buffer(CHUNK_SIZE);
+
+            fs.open(filePath, 'r', function(err, fd) {
+                if (err) throw err;
+
+                function readNextChunk() {
+                    fs.read(fd, buffer, 0, CHUNK_SIZE, readedBytes, function(err, bytesRead) {
+                        if (err) throw err;
+
+                        if (bytesRead === 0) {
+                            // done reading
+                            console.log("Uploaded last 150MB");
+                            req.end();
+
+                            fs.close(fd, function(err) {
+                                if (err) throw err;
+                            });
+                            return;
+                        }
+
+                        var data;
+                        if (bytesRead < CHUNK_SIZE) {
+                            // slice buffer if there is less data to upload then chunk size
+                            data = buffer.slice(0, bytesRead);
+                        } else {
+                            // upload the whole buffer
+                            data = buffer;
+                        }
+
+                        req.write(data, () => {
+                            // Uplode more...
+                            readNextChunk();
+                        });
+
+
+                    });
+                }
+                // Start upload...
+                readNextChunk();
+            });
+        });
+    }
+    /* getLink
+     * needs: [id]: Dropbox ID
+     *        [token]: oAuthToken
+     * returns a link for the given file
+     */
 let getLink = (id, token) => {
     // Check if there are existings links (maybe user has manually generated a link)
     // Dropbox just accepts one shared link per file for non paying users!
