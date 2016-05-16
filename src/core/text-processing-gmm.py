@@ -7,7 +7,7 @@ from sklearn import mixture
 import json
 from pprint import pprint
 
-nr_clusters = 10
+nr_clusters = 5
 
 # open the file with the data that should be clustered
 with open('./files/tmp/gmm-in.json') as data_file:    

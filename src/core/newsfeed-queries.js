@@ -57,34 +57,46 @@ function deleteRecommendation(entryId,userId){
 
 //Get the recommended Entries for this user
 function getRecommendations(userId, limit=10){
-    let sortby = {};
-    sortby['likelihood.' + userId] = 1;
-    let cursor = this.db.collection("entries")
-    .find({ $where: `this.owned_by !== "${userId}" && this.hidden_for instanceof Array && this.hidden_for.indexOf("${userId}") === -1` })
-    .sort(sortby)
-    .limit(limit)
-    return new Promise((resolve, reject) => {
-        let recommendations = [];
-        cursor.each((err, doc) => {
-            assert.equal(err, null);
-            if(doc !== null) {
-                recommendations.push(doc);
-            } else resolve(recommendations)
+
+    let user_equality_groups = this.db.collection('entries')
+        .aggregate([
+            {'$match': {'owned_by': {'$eq': userId}}},
+            {'$group': {'_id': '$equality_group'}}
+        ])
+        .toArray()
+        .then(arr => arr.map(obj => obj._id));
+
+
+    let recommendations = user_equality_groups
+        .then(groups => {
+            return this.db.collection('entries')
+                .aggregate([
+                    {'$sort': {'created_at': -1}},
+                    {'$group': {'_id': '$equality_group', 'recommend': {'$first': '$$CURRENT'}, 'likelihood': {'$first': '$likelihood.' + userId}}},
+                    {'$sort': {'likelihood': -1}},
+                    {'$match': {'recommend.equality_group': {'$nin': groups}}},
+                    {'$match': {'recommend.hidden_for': {'$ne': userId}}},
+                    {'$limit': limit}
+                ])
+                .toArray();
         })
-    })
-    .then(recommendations => recommendations.map(r => new Entry(r)))
-    //.then(sortRelevance)
-    .then(userRepresentation)
-    .then(recommendations => recommendations.map(recommendation => {
-        recommendation.type = "RECOMMENDATION"
-        return recommendation;
-    }));
+        .then(objs => objs.map(obj => obj.recommend));
+
+    return recommendations
+        .then(recommendations => recommendations.map(r => new Entry(r)))
+        //.then(sortRelevance)
+        .then(userRepresentation)
+        .then(recommendations => recommendations.map(recommendation => {
+            recommendation.type = "RECOMMENDATION"
+            return recommendation;
+        }));
 }
 
 function acceptRecommendation(userId, entry) {
     // create a new entry without an id
     let newEntryDbObject = entry.dbRepresentation;
     delete newEntryDbObject._id;
+    delete newEntryDbObject.created_at;
     let newEntry = new Entry(newEntryDbObject);
 
     // set the associated user 
