@@ -1,5 +1,8 @@
 /**
  * @author Tobias Dorra, Arwed Mett, Simon Oswald
+ *
+ * This is the central Router used by the express app
+ * Requests directed to /api/v1/ are handled here
  */
 import { Router } from "express";
 import session from "express-session";
