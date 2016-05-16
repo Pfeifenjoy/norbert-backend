@@ -377,7 +377,7 @@ let getID = (rev, entry) => {
 				} else {
 					reject({
 						entry: entry,
-						error: JSON.parse(response)
+						error: response
 					});
 				}
 
@@ -445,7 +445,7 @@ let delta = () => {
 					resolve(JSON.parse(response));
 				} else {
 					// retun json object with the error message
-					reject(JSON.parse(response));
+					reject(response);
 				}
 
 			});
@@ -529,7 +529,7 @@ let getSharedLink = (id, entry) => {
 				} else {
 					reject({
 						entry: entry,
-						error: JSON.parse(response)
+						error: response
 					});
 				}
 
@@ -595,7 +595,7 @@ let createSharedLink = (id, entry) => {
 				} else {
 					reject({
 						entry: entry,
-						error: JSON.parse(response)
+						error: response
 					});
 				}
 
