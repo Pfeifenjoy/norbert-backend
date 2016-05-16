@@ -1,11 +1,13 @@
 /**
- * @author Tobias Dorra
+ * @author Tobias Dorra, Simon Oswald
+ *
+ * These functions are used to fetch, hide or edit Information 
  */
 
 import {Information} from './information';
 import {ObjectId} from 'mongodb';
 
-
+//Get all Information for this user
 function getInformation(userID){
 	let query = {hidden_for : {$ne : ObjectId(userID)}, deleted: false};
 	let InformationCursor = this.db.collection('information').find(query);
@@ -38,16 +40,20 @@ function getInformationCount(){
      return this.db.collection('information').count();
 }
 
+//Hide an Information for this user, afterwards it won't show up in his newsfeed anymore
 function hideInformation(userID, informationID){
     return this.db.collection('information').findOne({ '_id' : ObjectId(informationID)})
     .then(i => {
       if(i){
         let info = new Information(i);
+				//To handle cases where the field hiddenFor doesn't exist yet
         if(info.hiddenFor === undefined){
           info.hiddenFor = [];
         }
+				//Add the user to the hiddenFor-Array
         info.hiddenFor.push(ObjectId(userID));
         let data = info.dbRepresentation;
+				//Write the updated information to the database
         this.db.collection('information').update({_id : ObjectId(informationID)}, data);
       }
     })
@@ -70,4 +76,3 @@ module.exports.findDeletedInformation = findDeletedInformation;
 module.exports.getInformationCount = getInformationCount;
 module.exports.hideInformation = hideInformation;
 module.exports.updateInformation = updateInformation;
-
