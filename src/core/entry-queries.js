@@ -1,5 +1,7 @@
 /**
  * @author: Arwed Mett,Simon Oswald
+ *
+ * These functions are used to create, edit, delete or fetch multiple entries from the database
  */
 
 import { ObjectId } from "mongodb";
@@ -26,16 +28,20 @@ function getEntries(userId){
     let entryCursor = this.db.collection('entries').find(query);
     let dbResult = entryCursor.toArray();
     let result = dbResult.then(data => {
+        //Create Entry-Objects
        return data.map(e => new Entry(e));
     });
     return result;
 }
 
+//Update an existing entry
 function updateEntry(entry) {
     entry.dirty = true;
     let data = entry.dbRepresentation;
     let id = entry.id;
     delete data._id;
+
+    //  $set specifies the data to change, fields not supplied in data will not be changed
     return this.db.collection("entries").findAndModify(
         {_id: id}, [], {"$set": data}, {"new": true}
     ).then(cursor => {
@@ -45,10 +51,12 @@ function updateEntry(entry) {
     });
 }
 
+
 function deleteEntry(entry){
     entry.deleted = true;
     return updateEntry.bind(this)(entry);
 }
+
 
 function findDirtyEntries(){
     return this.db.collection("entries")
@@ -91,4 +99,3 @@ module.exports = {
     getEntryCount,
     getEntriesOrderedByUser
 };
-
