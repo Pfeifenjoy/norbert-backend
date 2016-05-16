@@ -1,5 +1,7 @@
 /**
  * @author: Simon Oswald, Arwed Mett
+ *
+ * These functions are used to fetch the newsfeed for the user and to fetch or delete recommendations
  */
 
 import { Entry } from "./entry";
