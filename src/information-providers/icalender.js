@@ -118,7 +118,7 @@ function getIcalEntry(value){
 			
 			//Get a Timestamp to sort the entries by date
 			notification = createComponent('components-notification');
-			var date = new Date(year, month, day, hours, min);
+			var date = new Date(year, month-1, day, hours, min);
 			var timestamp = date.getTime();
 			notification.date = timestamp;
 			info.extra.ts = timestamp;
