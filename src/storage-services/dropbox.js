@@ -267,8 +267,6 @@ let singleRequestUpload = (fileName, filePath, token, uploadFolder) => {
         "mute": true
     });
 
-    console.log("Header: " + headerOptions);
-
     // An object of options to indicate where to post to
     let post_options = {
         host: contentUrl,
@@ -635,10 +633,10 @@ let multiRequestUploadFinish = (fileName, filePath, token, uploadFolder, readedB
         },
         "commit": {
             "path": encodedURIPath,
-            "mode": "add"
-        },
-        "autorename": true,
-        "mute": true
+            "mode": "add",
+            "autorename": true,
+            "mute": true
+        }
     });
 
     // An object of options to indicate where to post to
@@ -658,16 +656,16 @@ let multiRequestUploadFinish = (fileName, filePath, token, uploadFolder, readedB
         // Set up the request
         let req = https.request(post_options_start, (res) => {
 
-            var data = "";
+            var response = "";
             res.on('data', (chunk) => {
                 // Add the data chunks
-                data += chunk;
+                response += chunk;
             });
 
             res.on('end', () => {
                 if (res.statusCode === 200)
-                    resolve(JSON.parse(data));
-                else reject("Dropbox: Upload error:" + data);
+                    resolve(JSON.parse(response));
+                else reject("Dropbox: Upload error:" + response);
             });
 
         });
@@ -695,6 +693,8 @@ let multiRequestUploadFinish = (fileName, filePath, token, uploadFolder, readedB
                         });
                         return;
                     }
+
+                    readedBytes += bytesRead;
 
                     var data;
                     if (bytesRead < CHUNK_SIZE) {
