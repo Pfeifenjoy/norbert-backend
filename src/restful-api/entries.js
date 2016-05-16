@@ -33,13 +33,13 @@ router.put("/:entryId", (req, res) => {
     .then(entry => {
         if(entry.owned_by = req.session.user.id) {
             let title = req.body.title === undefined ? entry.title : req.body.title; 
-            let tags = req.body.tags;
+            let tags = req.body.tags || entry.tags;
             let components = req.body.components || [];
 
             entry.userRepresentation = {
                 title,
-                tags: tags || entry.tags,
-                components: components 
+                tags,
+                components
             }
             return req.app.core.updateEntry(entry);
         }

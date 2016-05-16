@@ -4,6 +4,7 @@
 
 import config from './../utils/configuration';
 import {loadPlugins} from './../utils/load-plugins'
+import { ObjectID } from 'mongodb';
 
 var componentsCache;
 var getComponentPlugins = function(){
@@ -114,6 +115,7 @@ class Component {
     constructor(dbObject) {
         this._obj = dbObject;
         this._obj.generated = this._obj.generated || false;
+        this._obj.id = dbObject.id || new ObjectID();
         this._obj.data = this._obj.data || {};
         this._data = dbObject.data;
 
@@ -153,6 +155,13 @@ class Component {
     }
 
     /**
+     * A unique ID of the component
+     */
+    get id() {
+        return this._obj.id;
+    }
+
+    /**
      * Was the component generated automatically? (e.g. by extracting information from a text)
      */
     get generated() {
@@ -184,6 +193,7 @@ class Component {
         let result = {};
         result['type'] = this.pluginName;
         result['data'] = this.getDataUserRepresentation();
+        result['id'] = this.id;
         return result;
     }
 

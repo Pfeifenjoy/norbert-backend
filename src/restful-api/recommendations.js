@@ -15,8 +15,8 @@ router.delete('/:id', (req,res) => {
     .catch((e) => {
         console.log(e);
         res.status(500).send("Could not delete recommendation.");
-    })
-})
+    });
+});
 
 router.get('/' , (req,res) => {
     req.app.core.getRecommendations(req.session.user.id)
@@ -27,6 +27,31 @@ router.get('/' , (req,res) => {
         console.error(e);
         res.status(500).send("Could not get recommendations.");
     });
-})
+});
+
+router.post("/:recommendationId", (req, res) => {
+    let { recommendationId } = req.params;
+
+    // get the user id 
+    let userId = req.session.user.id;
+
+    // get the entry 
+    let entry = req.app.core.getEntry(recommendationId);
+
+    // accept 
+    let accepted = entry.then(entry => {
+        return req.app.core.acceptRecommendation(userId, entry);
+    });
+
+    // send a response
+    let done = accepted
+        .then(newEntry => {
+            res.status(200).json(newEntry.userRepresentation);
+        })
+        .catch(e => {
+            res.status(500).send('Could not accept recommendation.');
+        });
+
+});
 
 export default router;

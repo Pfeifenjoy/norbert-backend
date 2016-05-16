@@ -27,7 +27,7 @@ class DocumentComponent extends Component {
     }
 
     getNotifications() {
-      return [];
+        return [];
     }
 
     getDataDbRepresentation() {

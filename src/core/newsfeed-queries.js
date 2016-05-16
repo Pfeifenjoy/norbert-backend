@@ -79,6 +79,20 @@ function getRecommendations(userId, limit=10){
     }));
 }
 
+function acceptRecommendation(userId, entry) {
+    // create a new entry without an id
+    let newEntryDbObject = entry.dbRepresentation;
+    delete newEntryDbObject._id;
+    let newEntry = new Entry(newEntryDbObject);
+
+    // set the associated user 
+    newEntry.owned_by = userId;
+
+    // save
+    return this.createEntry(newEntry);
+}
+
 module.exports.getNewsfeed = getNewsfeed;
 module.exports.deleteRecommendation = deleteRecommendation;
 module.exports.getRecommendations = getRecommendations;
+module.exports.acceptRecommendation = acceptRecommendation;

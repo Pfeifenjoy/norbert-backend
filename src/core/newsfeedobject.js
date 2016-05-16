@@ -139,13 +139,22 @@ class NewsFeedObject {
         if (obj.id)     this.id = ObjectID(obj.id);
         if (obj.title !== undefined)  this.title = obj.title;
         if (obj.components) {
-            let actualComponents = obj.components.map(compObj => {
-                let type = compObj.type;
-                let component = createComponent(type);
-                component.userRepresentation = compObj;
-                return component;
-            });
-            this.components = actualComponents;
+            let components = this.components;
+            let newComponents = [];
+            for (let component of obj.components) {
+                let oldComponent = components.find(element => element.id == component.id);
+                let componentToAdd;
+                if (oldComponent) {
+                    oldComponent.userRepresentation = component;
+                    componentToAdd = oldComponent;
+                } else {
+                    let type = component.type;
+                    componentToAdd = createComponent(type);
+                    componentToAdd.userRepresentation = component;
+                }
+                newComponents.push(componentToAdd);
+            }
+            this.components = newComponents;
         }
     }
 };
